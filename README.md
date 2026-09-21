@@ -52,17 +52,21 @@ Ye script automatically dependencies install karega, app icons generate karega, 
 
 ---
 
-### 2. Android APK Kaise Banayein (Build Android APK)
+### 2. Android APK Kaise Banayein (Manual Trigger Only)
 
-#### Tarika A: GitHub Actions (Bina Android Studio ke Cloud mein)
-Is project mein `.github/workflows/build.yml` file shamil hai:
-1. Is project ko apne GitHub repository mein push karein.
-2. GitHub Actions automatically Android APK aur Windows Desktop build banayega.
-3. Actions tab mein jaakar direct **`GanitGhar-Android-APK`** download karein!
+> [!NOTE]
+> APK build apne aap kabhi nahi chalega. Sirf tab chalega jab aap script run karenge ya manual trigger karenge.
 
-#### Tarika B: Apne PC par Local Build
+#### Tarika A: GitHub Actions (Cloud Build via Script)
 Windows par seedha double click karein:
-- **`build-apk.bat`**
+- **`trigger-cloud-apk.bat`**
+
+Ye script browser mein GitHub Actions page kholega jahan aap **"Run workflow"** button daba sakte hain, ya GitHub CLI se automatically build start karega.
+Build complete hote hi **Artifacts** se **`GanitGhar-Android-APK`** download kar sakte hain!
+
+#### Tarika B: Local PC par APK Build
+Windows par seedha double click karein:
+- **`build-apk.bat`** (ya run `npm run build:apk`)
 
 Ya terminal mein:
 ```bash
