@@ -1,0 +1,931 @@
+// 15 Math Topics with 10 Levels Each (150 Total Curated Progressive Levels)
+export const MINUS = '−';
+export const R = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+export const P = a => a[Math.floor(Math.random() * a.length)];
+export const shuffle = a => {
+  a = a.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = R(0, i);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+export const gcd = (a, b) => b ? gcd(b, a % b) : Math.abs(a);
+export const lcm = (a, b) => a / gcd(a, b) * b;
+export const rup = x => Math.round(x * 1e6) / 1e6;
+export const dstr = (v, k) => rup(v).toFixed(k);
+export const ns = n => n < 0 ? MINUS + (-n) : String(n);
+export const sg = n => n < 0 ? `(${MINUS}${-n})` : String(n);
+export const F = (n, d) => `<span class="fr"><b>${n}</b><i>${d}</i></span>`;
+export const X = '<i class="x">x</i>';
+export const BOX = '□';
+export const factorsOf = n => {
+  const f = [];
+  for (let i = 1; i <= n; i++) if (n % i === 0) f.push(i);
+  return f;
+};
+export const isPrime = n => {
+  if (n < 2) return false;
+  for (let i = 2; i * i <= n; i++) if (n % i === 0) return false;
+  return true;
+};
+export const smallestPrime = n => {
+  for (let i = 2; i * i <= n; i++) if (n % i === 0) return i;
+  return n;
+};
+
+export const NM = ['Riya', 'Aman', 'Sara', 'Kabir', 'Meena', 'Rohan', 'Anaya', 'Dev', 'Isha', 'Arjun'];
+export const IT = ['aam', 'kitabein', 'pencil', 'stickers', 'laddoo', 'marbles', 'cards', 'gubbare'];
+
+export function mc(p, correct, wrongs, e, x) {
+  const c = String(correct);
+  const w = [...new Set(wrongs.map(String))].filter(v => v !== c);
+  return Object.assign({ t: 'mcq', p, a: c, o: shuffle([c, ...w.slice(0, 3)]), e }, x || {});
+}
+export const num = (p, a, e, x) => Object.assign({ t: 'num', p, a: rup(a), e }, x || {});
+export const fr = (p, n, d, e) => ({ t: 'frac', p, a: [n, d], e });
+
+export function parseNum(s) {
+  s = String(s).replace(/−/g, '-').trim();
+  if (!/^-?\d*\.?\d+$|^-?\d+\.$/.test(s)) return NaN;
+  return parseFloat(s);
+}
+
+export function checkAnswer(q, s) {
+  if (q.t === 'num') {
+    const v = parseNum(s);
+    return { ok: Math.abs(v - q.a) < 1e-6 };
+  }
+  if (q.t === 'frac') {
+    s = String(s).replace(/\s/g, '');
+    let n, d;
+    if (/^\d+$/.test(s)) {
+      n = +s;
+      d = 1;
+    } else {
+      const m = s.match(/^(\d+)\/(\d+)$/);
+      if (!m) return { ok: false };
+      n = +m[1];
+      d = +m[2];
+      if (d === 0) return { ok: false };
+    }
+    const [an, ad] = q.a;
+    const ok = n * ad === an * d;
+    if (ok && gcd(n, d) !== 1 && d !== 1) {
+      const g = gcd(n, d);
+      return { ok: true, note: `Sahi hai! Ise aur chhota karo (simplify): ${F(n, d)} = ${F(n / g, d / g)}.` };
+    }
+    return { ok };
+  }
+  return { ok: false };
+}
+
+export function ansHTML(q) {
+  if (q.t === 'num') return `${ns(rup(q.a))}${q.u ? ' ' + q.u : ''}`;
+  if (q.t === 'frac') return q.a[1] === 1 ? String(q.a[0]) : F(q.a[0], q.a[1]);
+  return q.a;
+}
+
+/* ================= SVG helpers ================= */
+export const svgw = (inner, w = 200, h = 140, wd = 200) => `<svg class="sv" viewBox="0 0 ${w} ${h}" width="${wd}" role="img" aria-hidden="true">${inner}</svg>`;
+
+export function pie(n, k) {
+  const cx = 70, cy = 70, r = 60;
+  let s = '';
+  for (let i = 0; i < n; i++) {
+    const a0 = -Math.PI / 2 + i * 2 * Math.PI / n;
+    const a1 = -Math.PI / 2 + (i + 1) * 2 * Math.PI / n;
+    const x0 = cx + r * Math.cos(a0), y0 = cy + r * Math.sin(a0);
+    const x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+    s += `<path d="M${cx},${cy} L${x0.toFixed(1)},${y0.toFixed(1)} A${r},${r} 0 0 1 ${x1.toFixed(1)},${y1.toFixed(1)} Z" class="${i < k ? 'pf' : 'pe'}"/>`;
+  }
+  return svgw(s, 140, 140, 150);
+}
+
+export function polySVG(n) {
+  const cx = 70, cy = 70, r = 58, off = n === 4 ? Math.PI / 4 : 0;
+  let pts = [];
+  for (let i = 0; i < n; i++) {
+    const a = -Math.PI / 2 + off + i * 2 * Math.PI / n;
+    pts.push(`${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`);
+  }
+  return svgw(`<polygon points="${pts.join(' ')}" class="sf"/>`, 140, 140, 150);
+}
+
+export function circleSVG(label) {
+  return svgw(`<circle cx="70" cy="70" r="55" class="sf"/>${label ? `<line x1="70" y1="70" x2="125" y2="70" class="sl"/><circle cx="70" cy="70" r="3" class="dot"/><text x="97" y="62" text-anchor="middle" class="svt">${label}</text>` : ''}`, 140, 140, 150);
+}
+
+export function rectSVG(w, h, wl, hl) {
+  const s = Math.min(150 / w, 90 / h), rw = w * s, rh = h * s, x0 = (200 - rw) / 2, y0 = (140 - rh) / 2;
+  return svgw(`<rect x="${x0}" y="${y0}" width="${rw}" height="${rh}" class="sf"/>
+   <text x="100" y="${y0 - 8}" text-anchor="middle" class="svt">${wl}</text>
+   <text x="${x0 + rw + 8}" y="${y0 + rh / 2 + 5}" class="svt">${hl}</text>`);
+}
+
+export function angleSVG(deg) {
+  const vx = 68, vy = 68, L = 60, rad = deg * Math.PI / 180;
+  const ex = vx + L * Math.cos(rad), ey = vy - L * Math.sin(rad);
+  const ar = 22, ax = vx + ar * Math.cos(rad), ay = vy - ar * Math.sin(rad);
+  return svgw(`<line x1="${vx}" y1="${vy}" x2="${vx + L}" y2="${vy}" class="sl"/>
+   <line x1="${vx}" y1="${vy}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" class="sl"/>
+   <path d="M${vx + ar},${vy} A${ar},${ar} 0 ${deg > 180 ? 1 : 0} 0 ${ax.toFixed(1)},${ay.toFixed(1)}" class="sa"/>
+   <circle cx="${vx}" cy="${vy}" r="3.5" class="dot"/>`, 136, 136, 160);
+}
+
+export function rtSVG(la, lb, lc) {
+  return svgw(`<polygon points="62,115 182,115 62,25" class="sf"/>
+   <path d="M62,101 L76,101 L76,115" class="sa"/>
+   <text x="122" y="132" text-anchor="middle" class="svt">${la}</text>
+   <text x="54" y="74" text-anchor="end" class="svt">${lb}</text>
+   <text x="132" y="62" class="svt">${lc}</text>`, 200, 140, 200);
+}
+
+export function triSVG(a, b, c) {
+  return svgw(`<polygon points="25,118 175,118 95,22" class="sf"/>
+   <text x="42" y="110" class="svt">${a}</text><text x="128" y="110" class="svt">${b}</text><text x="80" y="55" class="svt">${c}</text>`);
+}
+
+export function clockSVG(h, m) {
+  const cx = 70, cy = 70;
+  let s = '<circle cx="70" cy="70" r="64" class="sf2"/>';
+  for (let i = 1; i <= 12; i++) {
+    const a = i * Math.PI / 6 - Math.PI / 2;
+    s += `<text x="${(cx + 50 * Math.cos(a)).toFixed(1)}" y="${(cy + 50 * Math.sin(a) + 5).toFixed(1)}" text-anchor="middle" class="svt">${i}</text>`;
+  }
+  const ma = m * Math.PI / 30 - Math.PI / 2, ha = ((h % 12) + m / 60) * Math.PI / 6 - Math.PI / 2;
+  s += `<line x1="70" y1="70" x2="${(cx + 30 * Math.cos(ha)).toFixed(1)}" y2="${(cy + 30 * Math.sin(ha)).toFixed(1)}" class="sl h"/>`;
+  s += `<line x1="70" y1="70" x2="${(cx + 44 * Math.cos(ma)).toFixed(1)}" y2="${(cy + 44 * Math.sin(ma)).toFixed(1)}" class="sl"/><circle cx="70" cy="70" r="4" class="dot"/>`;
+  return svgw(s, 140, 140, 170);
+}
+
+/* ================= 1. Jod-Ghata ================= */
+function asMissing() {
+  const x = R(100, 900), a = R(100, 500);
+  if (Math.random() < 0.5) return num(`${BOX} + ${a} = ${x + a}`, x, `Jodne ka ulta ghatana hai: ${x + a} ${MINUS} ${a} = ${x}.`);
+  return num(`${x + a} ${MINUS} ${BOX} = ${x}`, a, `${x + a} mein se ${BOX} hata kar ${x} bacha, to ${BOX} = ${x + a} ${MINUS} ${x} = ${a}.`);
+}
+function asTriple() {
+  if (Math.random() < 0.5) {
+    const a = R(1000, 5000), b = R(500, 3000), c = R(100, Math.min(a + b - 1, 3000));
+    return num(`${a} + ${b} ${MINUS} ${c} = ?`, a + b - c, `Left se right: ${a} + ${b} = ${a + b}, phir ${a + b} ${MINUS} ${c} = ${a + b - c}.`);
+  }
+  const a = R(3000, 9000), b = R(500, 2999), c = R(100, 3000);
+  return num(`${a} ${MINUS} ${b} + ${c} = ?`, a - b + c, `Left se right: ${a} ${MINUS} ${b} = ${a - b}, phir ${a - b} + ${c} = ${a - b + c}.`);
+}
+export const addsub = {
+  id: 'addsub', name: 'Jod-Ghata', sym: '±', color: '--blue', grp: 0, desc: 'Jodna aur ghatana: chhote se bade numbers tak.',
+  tips: [
+    [1, 'Ginti se shuru', 'Jodne ka matlab hai saath milana, ghatane ka matlab hai hatana. Ungliyon ya number line par aage-peeche ginte hue karo.'],
+    [3, 'Dahaai aur ikaayi', 'Ikaayi (ones) aur dahaai (tens) ko alag alag jodo. 34 + 25: 30 + 20 = 50 aur 4 + 5 = 9, to 59.'],
+    [4, 'Carry aur borrow', 'Ikaayi ka jod 10 se bada ho to 1 dahaai mein carry karo. Ghatate waqt upar wala chhota ho to padosi se 1 udhaar lo (borrow).'],
+    [7, 'Bade numbers', 'Ikaayi, dahaai, sau, hazaar... sab ko ek ke neeche ek rakho aur sabse right se shuru karo.'],
+    [9, 'Khaali dibba', 'Jodne ka ulta ghatana hai aur ghatane ka ulta jodna. 47 + □ = 91 ho to □ = 91 ' + MINUS + ' 47.']
+  ],
+  gen(L) {
+    if (L === 9) return asMissing();
+    if (L === 10) return asTriple();
+    const add = Math.random() < 0.5;
+    let a, b;
+    if (L === 1) { a = R(1, 9); b = R(1, 9); if (!add && a < b) [a, b] = [b, a]; }
+    else if (L === 2) { if (add) { a = R(5, 15); b = R(2, 20 - a); } else { a = R(11, 20); b = R(2, a - 1); } }
+    else if (L === 3) { if (add) { a = R(1, 4) * 10 + R(0, 4); b = R(1, 4) * 10 + R(0, 4); } else { a = R(5, 9) * 10 + R(5, 9); b = R(1, 4) * 10 + R(0, 4); } }
+    else {
+      const r = { 4: [20, 99, 20, 99], 5: [100, 999, 10, 99], 6: [100, 999, 100, 999], 7: [1000, 9999, 1000, 9999], 8: [10000, 99999, 1000, 99999] }[L];
+      a = R(r[0], r[1]); b = R(r[2], r[3]); if (!add && a < b) [a, b] = [b, a];
+    }
+    const ans = add ? a + b : a - b, bt = Math.floor(b / 10) * 10, bo = b % 10;
+    const e = L <= 2 ? `Number line par ${add ? 'aage' : 'peeche'} chalo: ${a} ${add ? '+' : MINUS} ${b} = ${ans}.`
+      : add ? `${a} + ${b} = ${a} + ${bt} + ${bo} = ${a + bt} + ${bo} = ${ans}.`
+        : `${a} ${MINUS} ${b} = ${a} ${MINUS} ${bt} ${MINUS} ${bo} = ${a - bt} ${MINUS} ${bo} = ${ans}.`;
+    return num(`${a} ${add ? '+' : MINUS} ${b} = ?`, ans, e);
+  }
+};
+
+/* ================= 2. Pahade ================= */
+export const mult = {
+  id: 'mult', name: 'Pahade aur Guna', sym: '×', color: '--orange', grp: 0, desc: 'Tables se lekar bade numbers ke guna tak.',
+  tips: [
+    [1, 'Pahade yaad karo', 'Guna matlab baar baar jodna. 4 × 3 = 4 + 4 + 4 = 12. Pahade jitne pakke honge, math utni tez hogi.'],
+    [5, 'Saare pahade', '2 se 12 tak ke pahade ek saath. Palat kar bhi socho: 6 × 7 aur 7 × 6 barabar hain.'],
+    [6, 'Tod kar guna karo', '23 × 4 = (20 × 4) + (3 × 4) = 80 + 12 = 92. Bade number ko dahaai aur ikaayi mein todo.'],
+    [7, 'Jaadui tricks', '× 9: pehle × 10 karo phir number ghata do. × 5: × 10 karo phir aadha. × 11: × 10 karo phir number jod do.'],
+    [10, 'Do-digit guna', 'Dono numbers ko todo: 34 × 26 = 34 × 20 + 34 × 6.']
+  ],
+  gen(L) {
+    if (L <= 5) {
+      const pool = { 1: [2, 5, 10], 2: [3, 4], 3: [6, 7], 4: [8, 9] }[L] || [2, 3, 4, 5, 6, 7, 8, 9, 11, 12];
+      const a = P(pool), b = L === 1 ? R(1, 10) : R(2, 12), ans = a * b;
+      if (Math.random() < 0.35) return num(`${a} × ${BOX} = ${ans}`, b, `${a} ke pahade mein dhoondo: ${a} × ${b} = ${ans}. Ya ${ans} ÷ ${a} = ${b}.`);
+      const tbl = [1, 2, 3, 4, 5].map(i => a * i).join(', ');
+      return num(`${a} × ${b} = ?`, ans, `${a} ka pahada: ${tbl}… to ${a} × ${b} = ${ans}.`);
+    }
+    let a, b;
+    if (L === 6) { a = R(11, 99); b = R(2, 9); }
+    else if (L === 7) { a = R(12, 99); b = P([5, 9, 11]); }
+    else if (L === 8) { a = R(12, 30); b = R(11, 19); }
+    else if (L === 9) { a = R(101, 999); b = R(2, 9); }
+    else { a = R(23, 99); b = R(23, 99); }
+    const ans = a * b;
+    let e;
+    if (L === 7) e = b === 9 ? `× 9 trick: ${a} × 10 ${MINUS} ${a} = ${a * 10} ${MINUS} ${a} = ${ans}.`
+      : b === 5 ? `× 5 trick: ${a} × 10 ÷ 2 = ${a * 10} ÷ 2 = ${ans}.`
+        : `× 11 trick: ${a} × 10 + ${a} = ${a * 10} + ${a} = ${ans}.`;
+    else if (b < 10) { const small = a % 10, big = a - small; e = `${a} × ${b} = (${big} × ${b}) + (${small} × ${b}) = ${big * b} + ${small * b} = ${ans}.`; }
+    else { const bo = b % 10, bt = b - bo; e = `${a} × ${b} = ${a} × ${bt} + ${a} × ${bo} = ${a * bt} + ${a * bo} = ${ans}.`; }
+    return num(`${a} × ${b} = ?`, ans, e);
+  }
+};
+
+/* ================= 3. Bhaag ================= */
+export const div = {
+  id: 'div', name: 'Bhaag (Division)', sym: '÷', color: '--pink', grp: 0, desc: 'Barabar baantna, quotient aur remainder.',
+  tips: [
+    [1, 'Barabar baantna', 'Bhaag ka matlab barabar hisse karna. 12 ÷ 3 = 4 kyunki 3 × 4 = 12. Guna aur bhaag ek dusre ke ulte hain.'],
+    [4, 'Bade numbers', 'Pahade mein dhoondo: 84 ÷ 4 = 21 kyunki 4 × 21 = 84. Ya pehle 80 ÷ 4 = 20 aur 4 ÷ 4 = 1 karo.'],
+    [5, 'Remainder (bachta)', 'Kabhi kabhi poora bhaag nahi hota. 17 ÷ 5: 5 × 3 = 15, bacha 2. Quotient 3, remainder 2. Remainder hamesha divisor se chhota hota hai.'],
+    [8, 'Do-digit divisor', 'Andaza lagao: 336 ÷ 12 ke liye 12 × 20 = 240, phir bacha 96, 12 × 8 = 96. To 28.']
+  ],
+  gen(L) {
+    let b, q, r = 0, ask = 'q';
+    if (L === 1) { b = R(2, 5); q = R(1, 10); }
+    else if (L === 2) { b = R(2, 10); q = R(1, 10); }
+    else if (L === 3) { b = R(2, 12); q = R(2, 12); }
+    else if (L === 4) { b = R(2, 9); q = R(10, 40); }
+    else if (L === 5) { b = R(3, 9); q = R(3, 15); r = R(1, b - 1); ask = 'r'; }
+    else if (L === 6) { b = R(3, 9); q = R(30, 150); }
+    else if (L === 7) { b = R(6, 12); q = R(10, 60); r = R(1, b - 1); ask = P(['q', 'r']); }
+    else if (L === 8) { b = R(11, 25); q = R(5, 30); }
+    else if (L === 9) { b = R(12, 30); q = R(20, 99); }
+    else { b = R(12, 49); q = R(20, 150); r = R(1, b - 1); ask = P(['q', 'r']); }
+    const a = b * q + r;
+    if (!r) return num(`${a} ÷ ${b} = ?`, q, `${b} × ${q} = ${a}, isliye ${a} ÷ ${b} = ${q}.`);
+    const e = `${b} × ${q} = ${b * q} aur ${a} ${MINUS} ${b * q} = ${r}. To quotient ${q}, remainder ${r}. (Remainder ${b} se chhota hi hota hai.)`;
+    const p = L === 10 ? `${a} chocolates ${b} bachhon mein barabar baante. ${ask === 'q' ? 'Har bachhe ko kitni milengi?' : 'Kitni chocolates bach jayengi?'}`
+      : `${a} ÷ ${b} karne par ${ask === 'q' ? 'quotient (bhaagfal) kya aayega?' : 'remainder (bachta) kitna hoga?'}`;
+    return num(p, ask === 'q' ? q : r, e);
+  }
+};
+
+/* ================= 4. Ank ki Keemat ================= */
+const PLN = ['ikaayi (ones)', 'dahaai (tens)', 'sau (hundreds)', 'hazaar (thousands)', 'das hazaar (ten thousands)', 'lakh', 'das lakh', 'crore'];
+function digitsDistinct(len) {
+  const ds = shuffle([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  if (ds[0] === 0) { const i = ds.findIndex(d => d !== 0); [ds[0], ds[i]] = [ds[i], ds[0]]; }
+  return ds.slice(0, len);
+}
+function fmtIN(n) {
+  const s = String(n); if (s.length <= 3) return s;
+  let rest = s.slice(0, -3); const last = s.slice(-3);
+  rest = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+  return rest + ',' + last;
+}
+function dv(len, indian) {
+  const ds = digitsDistinct(len), n = +ds.join('');
+  const nz = ds.map((d, i) => d ? i : -1).filter(i => i >= 0), i = P(nz), pos = len - 1 - i, d = ds[i], ans = d * Math.pow(10, pos);
+  return num(`<b>${indian ? fmtIN(n) : n}</b> mein <b>${d}</b> ki place value kitni hai?`, ans,
+    `${d} ${PLN[pos]} ke sthaan par hai, isliye uski keemat ${d} × ${Math.pow(10, pos)} = ${ans}.`);
+}
+function roundQ(to, len) {
+  const n = R(Math.pow(10, len - 1), Math.pow(10, len) - 1), ans = Math.round(n / to) * to, dig = Math.floor((n % to) / (to / 10));
+  return num(`${n} ko nearest ${to} tak round karo.`, ans, `${to / 10} wale sthaan ka digit ${dig} hai. 5 ya usse bada ho to upar round karte hain, warna neeche. Isliye ${ans}.`);
+}
+function order(len, big) {
+  const s = new Set(); while (s.size < 4) s.add(R(Math.pow(10, len - 1), Math.pow(10, len) - 1));
+  const a = [...s], c = big ? Math.max(...a) : Math.min(...a);
+  return mc(`Inmein sabse ${big ? 'bada' : 'chhota'} number kaun sa hai?`, c, a.filter(v => v !== c),
+    `Sabse bade sthaan (left) ke digit compare karo. Jiska digit ${big ? 'bada' : 'chhota'} ho wahi ${big ? 'bada' : 'chhota'} number hai. Sahi jawab ${c}.`);
+}
+function expanded(len, shuf) {
+  const n = R(Math.pow(10, len - 1), Math.pow(10, len) - 1), ds = String(n).split('').map(Number);
+  let parts = ds.map((d, i) => d * Math.pow(10, len - 1 - i)).filter(v => v > 0);
+  if (shuf) parts = shuffle(parts);
+  return num(`${parts.join(' + ')} = ?`, n, `Sab ko jodo: ${parts.join(' + ')} = ${n}.`);
+}
+function decQ(k) {
+  const len = k === 1 ? 3 : 4, ds = digitsDistinct(len), vals = k === 1 ? [10, 1, 0.1] : [10, 1, 0.1, 0.01];
+  const str = k === 1 ? `${ds[0]}${ds[1]}.${ds[2]}` : `${ds[0]}${ds[1]}.${ds[2]}${ds[3]}`;
+  const nz = ds.map((d, i) => d ? i : -1).filter(i => i >= 0), i = P(nz), d = ds[i], ans = rup(d * vals[i]);
+  const wrongs = vals.map(v => rup(d * v)).filter(v => v !== ans); wrongs.push(rup(d * 100));
+  const names = ['dahaai (tens)', 'ikaayi (ones)', 'dashamlav (tenths)', 'shatamlav (hundredths)'];
+  return mc(`<b>${str}</b> mein <b>${d}</b> ki place value kya hai?`, ans, wrongs,
+    `${d} ${names[i]} ke ghar mein hai. Decimal point ke baad pehla ghar tenths (0.1) aur doosra hundredths (0.01) ka hota hai. To ${d} × ${vals[i]} = ${ans}.`);
+}
+export const place = {
+  id: 'place', name: 'Ank ki Keemat', sym: '123', color: '--teal', grp: 0, desc: 'Place value, round karna, badi-chhoti sankhya, lakh aur crore.',
+  tips: [
+    [1, 'Har digit ki keemat', '45 mein 4 ki keemat 40 hai (dahaai) aur 5 ki keemat 5 (ikaayi). Ek hi digit alag jagah alag keemat rakhta hai.'],
+    [4, 'Round karna', 'Nearest 10 tak round: ikaayi ka digit 5 ya zyada ho to upar, warna neeche. 47 → 50, 42 → 40.'],
+    [7, 'Decimal ki place value', 'Decimal point ke baad: pehla ghar tenths (0.1), doosra hundredths (0.01).'],
+    [9, 'Lakh aur crore', 'Bharat mein commas ese lagte hain: 12,34,567 (bara lakh chauntis hazaar paanch sau sadsath). Ek lakh = 1,00,000 aur ek crore = 1,00,00,000.']
+  ],
+  gen(L) {
+    if (L === 1) return dv(2);
+    if (L === 2) return dv(3);
+    if (L === 3) return Math.random() < 0.5 ? dv(4) : expanded(R(3, 4));
+    if (L === 4) return roundQ(10, R(3, 4));
+    if (L === 5) return Math.random() < 0.5 ? roundQ(P([100, 1000]), 5) : order(4, true);
+    if (L === 6) return Math.random() < 0.5 ? expanded(5, true) : order(5, false);
+    if (L === 7) return decQ(1);
+    if (L === 8) return decQ(2);
+    if (L === 9) return dv(R(6, 7), true);
+    return Math.random() < 0.5 ? dv(8, true) : roundQ(P([10000, 100000]), 7);
+  }
+};
+
+/* ================= 5. Factors, Multiples, Primes ================= */
+function multQ(ks) {
+  const k = P(ks), c = k * R(2, 12), w = new Set();
+  while (w.size < 3) { const v = R(3, 70); if (v % k) w.add(v); }
+  return mc(`Kaun sa number <b>${k}</b> ka multiple hai?`, c, [...w], `${k} ke pahade mein aata hai: ${k} × ${c / k} = ${c}. Baaki numbers ${k} se poore bhaag nahi hote.`);
+}
+function eucl(a, b) {
+  let s = []; while (b) { s.push(`${a} = ${b} × ${Math.floor(a / b)} + ${a % b}`); [a, b] = [b, a % b]; } return s.join('; ');
+}
+export const numth = {
+  id: 'numth', name: 'Factors, Primes, HCF, LCM', sym: '7', color: '--violet', grp: 0, desc: 'Multiples, factors, prime numbers, HCF aur LCM.',
+  tips: [
+    [1, 'Multiple kya hai?', 'Kisi number ke pahade ke numbers uske multiples hain. 3 ke multiples: 3, 6, 9, 12…'],
+    [3, 'Factor kya hai?', 'Jo number kisi number ko poora bhaag de wo uska factor hai. 12 ke factors: 1, 2, 3, 4, 6, 12.'],
+    [4, 'Divisibility tricks', '3 ya 9 se bhaag: digits ka sum dekho. 456 → 4+5+6 = 15, 15 ko 3 se bhaag hota hai, to 456 ko bhi.'],
+    [5, 'Prime number', 'Prime ke sirf 2 factors hote hain: 1 aur wo khud. 2, 3, 5, 7, 11, 13… (1 prime nahi hai.)'],
+    [7, 'HCF', 'Do numbers ke common factors mein sabse bada = HCF (Highest Common Factor).'],
+    [8, 'LCM', 'Do numbers ke common multiples mein sabse chhota = LCM (Lowest Common Multiple).'],
+    [10, 'Kahani wale sawaal', '"Kitni der baad ek saath?" ⇒ LCM. "Sabse bada barabar tukda?" ⇒ HCF.']
+  ],
+  gen(L) {
+    if (L === 1) return multQ([2, 5, 10]);
+    if (L === 2) return multQ([3, 4, 6]);
+    if (L === 3) {
+      const n = P([12, 18, 20, 24, 30, 36, 40, 42, 48]), f = factorsOf(n), good = f.filter(x => x > 1 && x < n), c = P(good), bad = [];
+      for (let v = 2; v < n; v++) if (n % v) bad.push(v);
+      return mc(`<b>${n}</b> ka ek factor kaun sa hai?`, c, shuffle(bad).slice(0, 3), `${n} ke factors: ${f.join(', ')}. ${c} inmein hai.`);
+    }
+    if (L === 4) {
+      const k = P([3, 9]); let c, ws = [];
+      do { c = R(100, 999); } while (c % k);
+      while (ws.length < 3) { const v = R(100, 999); if (v % k) ws.push(v); }
+      const ds = String(c).split('').map(Number), sum = ds.reduce((a, b) => a + b, 0);
+      return mc(`Kaun sa number <b>${k}</b> se poora bhaag hota hai?`, c, ws, `${c} ke digits: ${ds.join(' + ')} = ${sum}. ${sum} ko ${k} se bhaag hota hai, isliye ${c} ko bhi.`);
+    }
+    if (L === 5) {
+      const primes = [11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47], comps = [21, 27, 33, 35, 39, 45, 49, 51, 55, 57, 63, 65, 77];
+      const p = P(primes), ws = shuffle(comps).slice(0, 3);
+      return mc(`Kaun sa number <b>prime</b> hai?`, p, ws, `${p} ke sirf do factors hain: 1 aur ${p}. Baaki: ${ws.map(w => `${w} = ${smallestPrime(w)} × ${w / smallestPrime(w)}`).join(', ')}.`);
+    }
+    if (L === 6) {
+      const n = P([12, 18, 20, 24, 28, 30, 32, 36, 40, 45, 48, 60]), f = factorsOf(n);
+      return num(`<b>${n}</b> ke kitne factors hain?`, f.length, `${n} ke factors: ${f.join(', ')}. Kul ${f.length}.`);
+    }
+    if (L === 7) {
+      const g = R(2, 9); let a, b; do { a = g * R(2, 6); b = g * R(2, 6); } while (a === b);
+      const h = gcd(a, b);
+      return num(`<b>${a}</b> aur <b>${b}</b> ka HCF kya hai?`, h, `${a} ke factors: ${factorsOf(a).join(', ')}. ${b} ke factors: ${factorsOf(b).join(', ')}. Common mein sabse bada: ${h}.`);
+    }
+    if (L === 8) {
+      let a, b; do { a = R(2, 12); b = R(2, 12); } while (a === b);
+      const l = lcm(a, b), ma = [], mb = [];
+      for (let i = 1; i * a <= l; i++) ma.push(i * a); for (let i = 1; i * b <= l; i++) mb.push(i * b);
+      return num(`<b>${a}</b> aur <b>${b}</b> ka LCM kya hai?`, l, `${a} ke multiples: ${ma.join(', ')}. ${b} ke multiples: ${mb.join(', ')}. Pehla common: ${l}.`);
+    }
+    if (L === 9) {
+      let a, b; do { a = R(12, 60); b = R(12, 60); } while (a === b);
+      const h = gcd(a, b), l = lcm(a, b);
+      if (Math.random() < 0.5) return num(`<b>${a}</b> aur <b>${b}</b> ka HCF kya hai?`, h, `Euclid vidhi: ${eucl(a, b)}. Aakhri non-zero remainder se pehle wala divisor HCF hai: ${h}.`);
+      return num(`<b>${a}</b> aur <b>${b}</b> ka LCM kya hai?`, l, `Pehle HCF = ${h}. LCM = (${a} × ${b}) ÷ HCF = ${a * b} ÷ ${h} = ${l}.`);
+    }
+    if (Math.random() < 0.5) {
+      let a, b; do { a = R(4, 20); b = R(4, 20); } while (a === b); const l = lcm(a, b);
+      return num(`Ek ghanti har <b>${a}</b> minute par aur doosri har <b>${b}</b> minute par bajti hai. Dono ek saath baji hain. Ab dobara ek saath kitne minute baad bajengi?`, l, `Ye LCM ka sawaal hai. LCM(${a}, ${b}) = ${l} minute.`, { u: 'min' });
+    }
+    const g = R(4, 12); let a, b; do { a = g * R(3, 9); b = g * R(3, 9); } while (a === b); const h = gcd(a, b);
+    return num(`${a} cm aur ${b} cm ki do rassiyon ko barabar lambai ke tukdon mein kaatna hai. Sabse bada tukda kitne cm ka hoga?`, h, `Ye HCF ka sawaal hai. HCF(${a}, ${b}) = ${h} cm.`, { u: 'cm' });
+  }
+};
+
+/* ================= 6. Fractions ================= */
+function fracCmp() {
+  let a, b, c, d, tries = 0;
+  do { b = R(2, 8); d = R(2, 8); a = R(1, b - 1); c = R(1, d - 1); tries++; } while ((b === d || (a * d === c * b && tries < 20)) && tries < 50);
+  const x = a * d, y = c * b, ans = x > y ? F(a, b) : x < y ? F(c, d) : 'Dono barabar';
+  return mc(`Kaun sa fraction bada hai: ${F(a, b)} ya ${F(c, d)}?`, ans, [F(a, b), F(c, d), 'Dono barabar'],
+    `Cross multiply: ${a} × ${d} = ${x} aur ${c} × ${b} = ${y}. ${x > y ? 'Pehla' : x < y ? 'Doosra' : 'Dono'} ${x === y ? 'barabar hain' : 'bada hai'}.`);
+}
+export const frac = {
+  id: 'frac', name: 'Bhinn (Fractions)', sym: '½', color: '--green', grp: 1, desc: 'Hissa dekhna se lekar guna aur bhaag tak.',
+  tips: [
+    [1, 'Fraction kya hai?', 'Poore ko barabar hisson mein baanto. Neeche wali sankhya (denominator) kul hisse, upar wali (numerator) kitne liye.'],
+    [3, 'Barabar fractions', 'Numerator aur denominator dono ko ek hi number se guna karo, fraction wahi rehta hai. ½ = 2/4 = 3/6.'],
+    [4, 'Jodna aur ghatana', 'Denominator same ho to sirf numerator jodo ya ghatao. Denominator wahi rehta hai.'],
+    [5, 'Simplify', 'Upar aur neeche dono ko common factor se bhaag do. 6/8 ÷ 2 = 3/4.'],
+    [6, 'Alag denominator', 'Pehle LCM se denominator barabar karo, ya cross multiply karke compare karo.'],
+    [8, 'Guna', 'Numerator × numerator, denominator × denominator.'],
+    [10, 'Bhaag', 'Doosre fraction ko ulta karke guna karo: (a/b) ÷ (c/d) = (a/b) × (d/c).']
+  ],
+  gen(L) {
+    if (L === 1) {
+      const n = R(2, 8), k = R(1, n - 1);
+      return mc(`${pie(n, k)}<br>Kitna hissa rang hua hai?`, F(k, n), [F(n - k, n), F(k, n + 1), F(k + 1, n), F(k, n - 1)], `Kul ${n} barabar hisse hain aur ${k} rang hue hain, isliye ${F(k, n)}.`);
+    }
+    if (L === 2) {
+      const d = R(5, 12), s = new Set(); while (s.size < 4) s.add(R(1, d - 1));
+      const a = [...s], mx = Math.max(...a);
+      return mc(`Sabse bada fraction kaun sa hai?`, F(mx, d), a.filter(v => v !== mx).map(v => F(v, d)), `Denominator same hai (${d}), to jiska numerator bada wahi fraction bada: ${F(mx, d)}.`);
+    }
+    if (L === 3) {
+      const b = R(2, 8), a = R(1, b - 1), k = R(2, 5);
+      return num(`${F(a, b)} = ${F(BOX, b * k)}`, a * k, `Neeche ${b} ko ${k} se guna kiya (${b * k}), to upar bhi ${k} se guna karo: ${a} × ${k} = ${a * k}.`);
+    }
+    if (L === 4) {
+      const d = R(4, 12), a = R(1, d - 2), b = R(1, d - a - 1);
+      return fr(`${F(a, d)} + ${F(b, d)} = ?`, a + b, d, `Denominator same hai, to sirf numerator jodo: ${a} + ${b} = ${a + b}. Jawab ${F(a + b, d)}.`);
+    }
+    if (L === 5) {
+      if (Math.random() < 0.5) {
+        const d = R(5, 15), b = R(1, d - 2), a = R(b + 1, d - 1);
+        return fr(`${F(a, d)} ${MINUS} ${F(b, d)} = ?`, a - b, d, `Denominator same: ${a} ${MINUS} ${b} = ${a - b}. Jawab ${F(a - b, d)}.`);
+      }
+      let n, d; do { d = R(3, 8); n = R(1, d - 1); } while (gcd(n, d) !== 1); const g = R(2, 5);
+      return fr(`${F(n * g, d * g)} ko sabse chhote roop (simplest form) mein likho.`, n, d, `Upar aur neeche ko ${g} se bhaag do: ${n * g} ÷ ${g} = ${n}, ${d * g} ÷ ${g} = ${d}.`);
+    }
+    if (L === 6) return fracCmp();
+    if (L === 7) {
+      let b, d; do { b = R(2, 8); d = R(2, 8); } while (b === d);
+      const a = R(1, b - 1), c = R(1, d - 1), l = lcm(b, d), s = a * l / b + c * l / d, g = gcd(s, l);
+      return fr(`${F(a, b)} + ${F(c, d)} = ?`, s, l, `LCM(${b}, ${d}) = ${l}. ${F(a, b)} = ${F(a * l / b, l)} aur ${F(c, d)} = ${F(c * l / d, l)}. Jodne par ${F(s, l)}${g > 1 ? ` = ${F(s / g, l / g)}` : ''}.`);
+    }
+    if (L === 8) {
+      if (Math.random() < 0.5) {
+        const b = R(2, 9), d = R(2, 9), a = R(1, b - 1), c = R(1, d - 1);
+        return fr(`${F(a, b)} × ${F(c, d)} = ?`, a * c, b * d, `Numerator × numerator = ${a * c}, denominator × denominator = ${b * d}. Jawab ${F(a * c, b * d)}.`);
+      }
+      const b = R(2, 9), a = R(1, b - 1), n = b * R(3, 10);
+      return num(`${n} ka ${F(a, b)} kitna hota hai?`, a * n / b, `Pehle ${n} ÷ ${b} = ${n / b}, phir × ${a} = ${a * n / b}.`);
+    }
+    if (L === 9) {
+      const b = R(2, 8), a = R(1, b - 1), w = R(1, 5);
+      if (Math.random() < 0.5) return fr(`<span class="mix">${w}</span>${F(a, b)} ko improper fraction mein badlo.`, w * b + a, b, `${w} × ${b} + ${a} = ${w * b + a}. Denominator wahi: ${F(w * b + a, b)}.`);
+      return num(`${F(w * b + a, b)} mein poore (whole) hisse kitne hain?`, w, `${w * b + a} ÷ ${b} = ${w}, baaki ${a}. To ${w} poore aur ${F(a, b)} bacha.`);
+    }
+    if (Math.random() < 0.5) {
+      let a, b, c, d;
+      do { b = R(2, 9); d = R(2, 9); a = R(1, b - 1); c = R(1, d - 1); } while (c * a === 0 || a * d === b * c);
+      return fr(`${F(a, b)} ÷ ${F(c, d)} = ?`, a * d, b * c, `Ulta karke guna karo: ${F(a, b)} × ${F(d, c)} = ${F(a * d, b * c)}.`);
+    }
+    let b, d, a, c;
+    do { b = R(2, 8); d = R(2, 8); a = R(1, b - 1); c = R(1, d - 1); } while (b === d || a * d <= c * b);
+    const l = lcm(b, d), s = a * l / b - c * l / d;
+    return fr(`${F(a, b)} ${MINUS} ${F(c, d)} = ?`, s, l, `LCM(${b}, ${d}) = ${l}. ${F(a * l / b, l)} ${MINUS} ${F(c * l / d, l)} = ${F(s, l)}.`);
+  }
+};
+
+/* ================= 7. Decimals ================= */
+const DECF = [[1, 2], [1, 4], [3, 4], [1, 5], [2, 5], [3, 5], [4, 5], [1, 10], [3, 10], [7, 10], [1, 20], [3, 20], [1, 25], [3, 25], [9, 20]];
+export const dec = {
+  id: 'dec', name: 'Dashamlav (Decimals)', sym: '0.5', color: '--red', grp: 1, desc: 'Decimal jodna, ghatana, guna, bhaag aur round.',
+  tips: [
+    [1, 'Decimal point', '0.3 matlab 3 tenths (dashamlav), yaani ek ke 10 hisson mein se 3.'],
+    [2, 'Barabar lambai', 'Decimals compare karte waqt zero jodkar barabar lambai karo: 0.7 = 0.70, aur 0.70 > 0.65.'],
+    [3, 'Decimal jodna', 'Decimal point ke neeche decimal point rakho aur ikaayi se jodo, jaise normal numbers.'],
+    [5, 'Fraction se decimal', 'Denominator ko 10 ya 100 banao: 3/4 = 75/100 = 0.75. Ya numerator ÷ denominator karo.'],
+    [6, '10, 100, 1000', '× 10 mein decimal point 1 ghar right, ÷ 10 mein 1 ghar left.'],
+    [9, 'Round karna', 'Aglaa digit 5 ya zyada ho to upar round, warna neeche.']
+  ],
+  gen(L) {
+    if (L === 1) { const a = R(1, 5), b = R(1, 5); return num(`0.${a} + 0.${b} = ?`, (a + b) / 10, `${a} tenths + ${b} tenths = ${a + b} tenths = ${dstr((a + b) / 10, 1)}.`, { dec: true }); }
+    if (L === 2) {
+      let a, y; do { a = R(1, 9); y = R(10, 99); } while (a * 10 === y);
+      const xs = `0.${a}`, ys = `0.${y}`, big = a * 10 > y ? xs : ys;
+      return mc(`Kaun sa decimal bada hai?`, big, [xs, ys, 'Dono barabar'], `${xs} = 0.${a}0. Ab 0.${a}0 aur ${ys} compare karo: ${a * 10} sau-wa hissa vs ${y} sau-wa hissa. ${big} bada hai.`);
+    }
+    if (L === 3) { const A = R(11, 99), B = R(11, 99); return num(`${dstr(A / 10, 1)} + ${dstr(B / 10, 1)} = ?`, (A + B) / 10, `Decimal point ke neeche decimal point rakh ke jodo: ${dstr(A / 10, 1)} + ${dstr(B / 10, 1)} = ${dstr((A + B) / 10, 1)}.`, { dec: true }); }
+    if (L === 4) {
+      let A = R(101, 999), B = R(101, 999); const add = Math.random() < 0.5; if (!add && A < B) [A, B] = [B, A];
+      const r = add ? A + B : A - B;
+      return num(`${dstr(A / 100, 2)} ${add ? '+' : MINUS} ${dstr(B / 100, 2)} = ?`, r / 100, `Decimal points ek ke neeche ek rakho: ${dstr(A / 100, 2)} ${add ? '+' : MINUS} ${dstr(B / 100, 2)} = ${dstr(r / 100, 2)}.`, { dec: true });
+    }
+    if (L === 5) {
+      const [n, d] = P(DECF), k = 100 / d;
+      return num(`${F(n, d)} = ? (decimal mein)`, n / d, `${F(n, d)} = ${F(n * k, 100)} = ${dstr(n / d, 2)}. Ya ${n} ÷ ${d} karo.`, { dec: true });
+    }
+    if (L === 6) {
+      const x = R(1, 9999) / 100, m = P([10, 100, 1000]), z = String(m).length - 1, mul = Math.random() < 0.6;
+      const r = mul ? x * m : x / m;
+      return num(`${dstr(x, 2)} ${mul ? '×' : '÷'} ${m} = ?`, r, `${m} mein ${z} zero hain, isliye decimal point ${z} ghar ${mul ? 'right' : 'left'} khiskao: ${String(rup(r))}.`, { dec: true });
+    }
+    if (L === 7) {
+      const x = R(2, 99) / 10, n = R(2, 9);
+      return num(`${dstr(x, 1)} × ${n} = ?`, x * n, `Decimal ko bhool kar guna karo: ${Math.round(x * 10)} × ${n} = ${Math.round(x * 10) * n}. Phir 1 decimal place lagao: ${String(rup(x * n))}.`, { dec: true });
+    }
+    if (L === 8) {
+      const d = R(2, 9); let q, x, k;
+      if (Math.random() < 0.5) { q = R(12, 99) / 10; k = 1; } else { q = R(11, 99) / 100; k = 2; }
+      x = q * d;
+      return num(`${dstr(x, k)} ÷ ${d} = ?`, q, `${dstr(x, k)} ÷ ${d} = ${dstr(q, k)}. Check: ${dstr(q, k)} × ${d} = ${dstr(x, k)}.`, { dec: true });
+    }
+    if (L === 9) {
+      const xi = R(1000, 99999), k = P([1, 2]), x = xi / 1000, ans = Math.round(xi / Math.pow(10, 3 - k)) / Math.pow(10, k);
+      return num(`${dstr(x, 3)} ko ${k} decimal place tak round karo.`, ans, `${k} decimal place ke baad ka digit dekho. 5 ya zyada ho to upar, warna neeche. Jawab ${dstr(ans, k)}.`, { dec: true });
+    }
+    const t = P([0, 1, 2]);
+    if (t === 0) { const A = R(2000, 9999) / 100, B = R(500, 3000) / 100; return num(`Ek kitab ₹${dstr(A, 2)} ki aur ek bag ₹${dstr(B, 2)} ka hai. Dono ka total kitna hoga?`, A + B, `${dstr(A, 2)} + ${dstr(B, 2)} = ${dstr(A + B, 2)}.`, { dec: true, u: '₹' }); }
+    if (t === 1) { const c = R(1500, 6000) / 100, w = R(2, 6); return num(`Ek kilo seb ₹${dstr(c, 2)} ke hain. ${w} kilo seb ka daam kitna hoga?`, c * w, `${dstr(c, 2)} × ${w} = ${dstr(c * w, 2)}.`, { dec: true, u: '₹' }); }
+    const L1 = R(250, 900) / 100, w = R(2, 5); return num(`Ek ribbon ${dstr(L1, 2)} m lambi hai. ${w} aise ribbons ki kul lambai kitni hogi?`, L1 * w, `${dstr(L1, 2)} × ${w} = ${dstr(L1 * w, 2)} m.`, { dec: true, u: 'm' });
+  }
+};
+
+/* ================= 8. Percentage ================= */
+const PF = [[1, 2], [1, 4], [3, 4], [1, 5], [2, 5], [3, 5], [4, 5], [1, 10], [7, 10], [1, 20], [3, 20], [1, 25], [3, 25], [1, 50], [9, 10]];
+export const pct = {
+  id: 'pct', name: 'Pratishat (Percentage)', sym: '%', color: '--yellow', grp: 1, desc: 'Percentage, discount, profit aur loss.',
+  tips: [
+    [1, 'Percent matlab 100 mein se', '50% = 50/100 = aadha. 10% nikalne ke liye number ko 10 se bhaag do.'],
+    [2, 'Aasaan percentages', '25% = ek chauthai (÷ 4), 50% = aadha (÷ 2), 75% = teen chauthai.'],
+    [4, 'Fraction se percent', 'Fraction × 100: 3/4 × 100 = 75%.'],
+    [5, 'Kisi bhi percent ka', 'x% of n = n × x ÷ 100. Ya 10% nikal kar tod lo: 15% = 10% + 5%.'],
+    [6, 'Kitna percent?', '(hissa ÷ poora) × 100. 12 ka 48 mein: 12 ÷ 48 × 100 = 25%.'],
+    [7, 'Discount', 'Discount = price × d ÷ 100. Naya price = price ' + MINUS + ' discount.'],
+    [9, 'Profit aur loss', 'Profit % = (profit ÷ cost price) × 100. Loss % bhi cost price par nikalte hain.'],
+    [10, 'Percent change', 'Badlaav % = (badlaav ÷ purana) × 100.']
+  ],
+  gen(L) {
+    if (L === 1) { const x = P([50, 10, 100]), n = 20 * R(1, 10); return num(`${n} ka ${x}% kitna hota hai?`, n * x / 100, x === 50 ? `50% matlab aadha: ${n} ÷ 2 = ${n / 2}.` : x === 10 ? `10% = ${n} ÷ 10 = ${n / 10}.` : `100% matlab poora: ${n}.`); }
+    if (L === 2) { const x = P([25, 50, 75]), n = 4 * R(2, 40); return num(`${n} ka ${x}% kitna hota hai?`, n * x / 100, `${x}% = ${x === 25 ? 'ek chauthai (÷ 4)' : x === 50 ? 'aadha (÷ 2)' : 'teen chauthai (÷ 4 phir × 3)'}. Jawab ${n * x / 100}.`); }
+    if (L === 3) { const x = P([10, 20, 30, 40]), n = 10 * R(2, 50); return num(`${n} ka ${x}% kitna hota hai?`, n * x / 100, `10% = ${n / 10}. ${x}% = ${x / 10} × ${n / 10} = ${n * x / 100}.`); }
+    if (L === 4) { const [n, d] = P(PF); return num(`${F(n, d)} = kitna percent (%)?`, n * 100 / d, `${F(n, d)} × 100 = ${n * 100 / d}%.`, { u: '%' }); }
+    if (L === 5) { const x = P([5, 12, 15, 35, 45, 8, 16, 60, 75, 80, 90]), st = 100 / gcd(x, 100), n = st * R(1, Math.max(1, Math.floor(400 / st))); return num(`${n} ka ${x}% kitna hota hai?`, n * x / 100, `${x}% = ${x}/100. ${n} × ${x} ÷ 100 = ${n * x / 100}.`); }
+    if (L === 6) { const p = P([10, 20, 25, 30, 40, 50, 60, 75, 80]), st = 100 / gcd(p, 100), b = st * R(1, Math.floor(400 / st)), a = b * p / 100; return num(`${a} kitne percent hai ${b} ka?`, p, `(${a} ÷ ${b}) × 100 = ${p}%.`, { u: '%' }); }
+    if (L === 7) { const pr = 100 * R(1, 20), d = P([5, 10, 15, 20, 25, 30, 40, 50]), sv = pr * d / 100; return num(`Ek shirt ka price ₹${pr} hai aur us par ${d}% discount hai. Shirt kitne rupaye mein milegi?`, pr - sv, `Discount = ${pr} × ${d} ÷ 100 = ₹${sv}. Price = ${pr} ${MINUS} ${sv} = ₹${pr - sv}.`, { u: '₹' }); }
+    if (L === 8) { const old = 100 * R(2, 50), d = P([10, 20, 25, 50]), up = Math.random() < 0.6; const nw = old * (100 + (up ? d : -d)) / 100; return num(`Ek cheez ka price ₹${old} tha. Wo ${d}% ${up ? 'badh' : 'ghat'} gaya. Naya price?`, nw, `${d}% of ${old} = ${old * d / 100}. ${up ? 'Jodo' : 'Ghatao'}: ${old} ${up ? '+' : MINUS} ${old * d / 100} = ${nw}.`, { u: '₹' }); }
+    if (L === 9) {
+      const cp = 100 * R(2, 30);
+      if (Math.random() < 0.5) { const p = P([5, 10, 20, 25, 50]), sp = cp * (100 + p) / 100; return num(`Ek cheez ₹${cp} mein kharidi aur ₹${sp} mein bechi. Profit kitna percent hua?`, p, `Profit = ${sp} ${MINUS} ${cp} = ₹${sp - cp}. Profit % = (${sp - cp} ÷ ${cp}) × 100 = ${p}%.`, { u: '%' }); }
+      const l = P([10, 20, 25]), sp = cp * (100 - l) / 100; return num(`Ek cheez ₹${cp} mein kharidi aur ₹${sp} mein bechi. Loss kitna percent hua?`, l, `Loss = ${cp} ${MINUS} ${sp} = ₹${cp - sp}. Loss % = (${cp - sp} ÷ ${cp}) × 100 = ${l}%.`, { u: '%' });
+    }
+    if (Math.random() < 0.5) { const old = 20 * R(2, 10), d = P([10, 20, 25, 50]), up = Math.random() < 0.5, nw = old * (100 + (up ? d : -d)) / 100; return num(`Marks ${old} se ${nw} ho gaye. Kitne percent ${up ? 'badhe' : 'ghate'}?`, d, `Badlaav = ${Math.abs(nw - old)}. (${Math.abs(nw - old)} ÷ ${old}) × 100 = ${d}%.`, { u: '%' }); }
+    const pr = 400 * R(1, 10), d1 = P([10, 20, 25]), d2 = P([10, 20, 25]), r1 = pr * (100 - d1) / 100, r2 = r1 * (100 - d2) / 100;
+    return num(`₹${pr} ki cheez par pehle ${d1}% aur phir ${d2}% ka discount mila. Final price kitna hua?`, r2, `Pehle discount ke baad: ${pr} ${MINUS} ${pr * d1 / 100} = ${r1}. Doosre ke baad: ${r1} ${MINUS} ${r1 * d2 / 100} = ${r2}.`, { u: '₹' });
+  }
+};
+
+/* ================= 9. BODMAS ================= */
+function bRender(t) {
+  const out = [];
+  for (let i = 0; i < t.length; i++) {
+    const x = t[i];
+    if (x === '^') { out[out.length - 1] += '²'; i++; continue; }
+    out.push(typeof x === 'number' ? ns(x) : x === '-' ? MINUS : x);
+  }
+  return out.join(' ').replace(/\( /g, '(').replace(/ \)/g, ')');
+}
+function bReduce(t) {
+  t = t.slice();
+  let s = 0, e = t.length, i = t.lastIndexOf('(');
+  if (i >= 0) { s = i + 1; e = t.indexOf(')', i); }
+  let k = -1;
+  for (const pri of [['^'], ['×', '÷'], ['+', '-']]) {
+    for (let m = s + 1; m < e; m += 2) if (pri.includes(t[m])) { k = m; break; }
+    if (k >= 0) break;
+  }
+  const a = t[k - 1], b = t[k + 1], o = t[k];
+  const v = o === '^' ? Math.pow(a, b) : o === '×' ? a * b : o === '÷' ? a / b : o === '+' ? a + b : a - b;
+  t.splice(k - 1, 3, v);
+  if (i >= 0 && t[i] === '(' && t[i + 2] === ')') t.splice(i, 3, t[i + 1]);
+  return t;
+}
+function bTrace(tokens) {
+  let t = tokens.slice(); const steps = [bRender(t)];
+  while (t.length > 1) { t = bReduce(t); steps.push(bRender(t)); }
+  return { ans: t[0], steps };
+}
+function bQ(tokens) {
+  const { ans, steps } = bTrace(tokens);
+  return num(`<span class="math">${steps[0]} = ?</span>`, ans, `Order yaad rakho: <b>B</b>racket → <b>O</b>rder (power) → <b>D</b>ivision/<b>M</b>ultiplication → <b>A</b>ddition/<b>S</b>ubtraction.<br>${steps.join(' → ')}`, { neg: ans < 0 });
+}
+export const bodmas = {
+  id: 'bodmas', name: 'BODMAS', sym: '( )', color: '--violet', grp: 2, desc: 'Kaun sa kaam pehle? Brackets, powers aur operations ka order.',
+  tips: [
+    [1, 'Pehle guna', '1 + 2 × 3 mein pehle guna hota hai: 2 × 3 = 6, phir 1 + 6 = 7. (9 nahi!)'],
+    [3, 'Bracket sabse pehle', 'Bracket ke andar ka kaam sabse pehle. (1 + 2) × 3 = 3 × 3 = 9.'],
+    [4, 'Bhaag aur guna barabar', '× aur ÷ ka darja barabar hai, to left se right karo. + aur ' + MINUS + ' ka bhi.'],
+    [7, 'Power', '5² matlab 5 × 5 = 25. Power bracket ke baad, guna se pehle aata hai.'],
+    [9, 'Bracket ke andar bracket', 'Sabse andar wale bracket se shuru karo aur bahar ki taraf badho.']
+  ],
+  gen(L) {
+    const a = () => R(1, 9);
+    if (L === 1) { if (Math.random() < 0.5) return bQ([a(), '+', R(2, 9), '×', R(2, 9)]); return bQ([R(2, 9), '×', R(2, 9), '+', a()]); }
+    if (L === 2) {
+      if (Math.random() < 0.5) { const x = R(3, 9), y = R(3, 9); return bQ([x, '×', y, '-', R(1, Math.min(20, x * y - 1))]); }
+      const b = R(2, 4), c = R(2, 4); return bQ([R(b * c + 1, b * c + 20), '-', b, '×', c]);
+    }
+    if (L === 3) { if (Math.random() < 0.5) return bQ(['(', R(1, 9), '+', R(1, 9), ')', '×', R(2, 9)]); const y = R(1, 8); return bQ(['(', R(y + 1, 15), '-', y, ')', '×', R(2, 9)]); }
+    if (L === 4) {
+      if (Math.random() < 0.5) { const c = R(2, 9); return bQ([R(1, 20), '+', R(2, 9) * c, '÷', c]); }
+      const c = R(2, 9), s = c * R(2, 9), x = R(1, s - 1); return bQ(['(', x, '+', s-x, ')', '÷', c]);
+    }
+    if (L === 5) {
+      if (Math.random() < 0.5) return bQ([R(2, 9), '×', R(2, 9), '+', R(2, 9), '×', R(2, 9)]);
+      const d = R(2, 5); return bQ([R(10, 20), '+', R(2, 5), '×', R(2, 5), '-', R(1, 4) * d, '÷', d]);
+    }
+    if (L === 6) {
+      if (Math.random() < 0.5) { const x = R(2, 6), y = R(2, 9), z = R(2, 9); return bQ([x, '×', '(', y, '+', z, ')', '-', R(1, x * (y + z) - 1)]); }
+      const d = R(1, 8); return bQ(['(', R(2, 9), '+', R(1, 9), ')', '×', '(', R(d + 1, 15), '-', d, ')']);
+    }
+    if (L === 7) {
+      const t = R(0, 2);
+      if (t === 0) return bQ([R(2, 9), '^', 2, '+', R(2, 9), '×', R(2, 9)]);
+      if (t === 1) return bQ(['(', R(1, 6), '+', R(1, 6), ')', '^', 2]);
+      const y = R(2, 6); return bQ([R(y + 1, 10), '^', 2, '-', y, '^', 2]);
+    }
+    if (L === 8) { const e = R(2, 5), b = e * R(1, 4), d = R(1, 8); return bQ([R(1, 20), '+', b, '×', '(', R(d + 1, 15), '-', d, ')', '÷', e]); }
+    if (L === 9) { const x = R(2, 6), b = R(2, 9), c = R(5, 12), d = R(1, c - 1); return bQ([x, '×', '(', b, '+', '(', c, '-', d, ')', ')', '-', R(1, x * b)]); }
+    if (Math.random() < 0.6) { const e = R(2, 4), k = R(2, 5), s = e * k, b = R(1, s - 1); return bQ([R(6, 12), '^', 2, '-', '(', b, '+', s - b, ')', '×', R(2, 5), '÷', e]); }
+    const p = R(2, 5), q = R(2, 5), x = R(2, 9); return bQ([x * (p + q), '÷', '(', p, '+', q, ')', '+', R(2, 6), '^', 2]);
+  }
+};
+
+/* ================= 10. Algebra ================= */
+export const algebra = {
+  id: 'algebra', name: 'Algebra: x dhoondo', sym: 'x', color: '--blue', grp: 2, desc: 'Chhupa hua number dhoondo, equation solve karo.',
+  tips: [
+    [1, 'Khaali dibba', 'Sawaal mein ek number chhupa hai. □ + 5 = 12 mein □ wo number hai jise 5 mein jodne par 12 milta hai.'],
+    [3, 'Letter x', 'Ab dibbe ki jagah letter x likhte hain. x bas ek anjaana number hai.'],
+    [4, 'Ulta operation', 'Jo x ke saath ho raha hai uska ulta karo. Guna → bhaag, jod → ghata. Dono taraf barabar karo!'],
+    [5, 'Do kadam', '2x + 3 = 11: pehle 3 hatao (11 ' + MINUS + ' 3 = 8), phir 2 se bhaag do (8 ÷ 2 = 4).'],
+    [8, 'Bracket wale', 'Pehle poori equation ko bracket ke bahar wale number se bhaag do, ya bracket khol do.'],
+    [9, 'Dono taraf x', 'x wale terms ek taraf, numbers doosri taraf: 5x ' + MINUS + ' 3 = 2x + 9 ⇒ 3x = 12.']
+  ],
+  gen(L) {
+    const st = (a, b, c, x) => `${a}${X} + ${b} = ${c} ⇒ ${a}${X} = ${c} ${MINUS} ${b} = ${c - b} ⇒ ${X} = ${c - b} ÷ ${a} = ${x}`;
+    if (L === 1) { const a = R(1, 9), x = R(1, 9); return num(`${BOX} + ${a} = ${x + a}`, x, `${x + a} ${MINUS} ${a} = ${x}.`); }
+    if (L === 2) {
+      const t = R(0, 1);
+      if (t === 0) { const b = R(1, 9), x = R(5, 20); return num(`${BOX} ${MINUS} ${b} = ${x - b}`, x, `Ghatane ka ulta jodna: ${x - b} + ${b} = ${x}.`); }
+      const a = R(2, 9), x = R(2, 9); return num(`${a} × ${BOX} = ${a * x}`, x, `${a * x} ÷ ${a} = ${x}.`);
+    }
+    if (L === 3) {
+      if (Math.random() < 0.5) { const a = R(10, 60), x = R(10, 60); return num(`${X} + ${a} = ${x + a}`, x, `${X} = ${x + a} ${MINUS} ${a} = ${x}.`); }
+      const a = R(10, 60), x = R(a + 1, a + 60); return num(`${X} ${MINUS} ${a} = ${x - a}`, x, `${X} = ${x - a} + ${a} = ${x}.`);
+    }
+    if (L === 4) {
+      if (Math.random() < 0.5) { const a = R(2, 9), x = R(2, 12); return num(`${a}${X} = ${a * x}`, x, `${X} = ${a * x} ÷ ${a} = ${x}.`); }
+      const a = R(2, 9), b = R(2, 12); return num(`${F(X, a)} = ${b}`, a * b, `${X} = ${b} × ${a} = ${a * b}.`);
+    }
+    if (L === 5) { const a = R(2, 6), x = R(2, 10), b = R(1, 20); return num(`${a}${X} + ${b} = ${a * x + b}`, x, st(a, b, a * x + b, x)); }
+    if (L === 6) { const a = R(2, 6), x = R(3, 10), b = R(1, Math.min(20, a * x - 1)); return num(`${a}${X} ${MINUS} ${b} = ${a * x - b}`, x, `${a}${X} ${MINUS} ${b} = ${a * x - b} ⇒ ${a}${X} = ${a * x - b} + ${b} = ${a * x} ⇒ ${X} = ${a * x} ÷ ${a} = ${x}`); }
+    if (L === 7) {
+      if (Math.random() < 0.5) { const a = R(2, 9), x = a * R(2, 9), b = R(1, 15); return num(`${F(X, a)} + ${b} = ${x / a + b}`, x, `${F(X, a)} = ${x / a + b} ${MINUS} ${b} = ${x / a} ⇒ ${X} = ${x / a} × ${a} = ${x}`); }
+      const a = R(3, 9), x = R(10, 25), b = R(5, 40); return num(`${a}${X} + ${b} = ${a * x + b}`, x, st(a, b, a * x + b, x));
+    }
+    if (L === 8) {
+      const a = R(2, 6), b = R(1, 9);
+      if (Math.random() < 0.5) { const x = R(2, 12); return num(`${a}(${X} + ${b}) = ${a * (x + b)}`, x, `${a}(${X} + ${b}) = ${a * (x + b)} ⇒ ${X} + ${b} = ${x + b} ⇒ ${X} = ${x + b} ${MINUS} ${b} = ${x}`); }
+      const x = R(b + 1, b + 12); return num(`${a}(${X} ${MINUS} ${b}) = ${a * (x - b)}`, x, `${a}(${X} ${MINUS} ${b}) = ${a * (x - b)} ⇒ ${X} ${MINUS} ${b} = ${x - b} ⇒ ${X} = ${x - b} + ${b} = ${x}`);
+    }
+    if (L === 9) {
+      const c = R(1, 5), a = c + R(1, 5), x = R(2, 10), b = R(1, 15), d = (a - c) * x + b;
+      return num(`${a}${X} + ${b} = ${c}${X} + ${d}`, x, `${a}${X} ${MINUS} ${c}${X} = ${d} ${MINUS} ${b} ⇒ ${a - c}${X} = ${d - b} ⇒ ${X} = ${d - b} ÷ ${a - c} = ${x}`);
+    }
+    if (Math.random() < 0.5) {
+      const a = R(2, 9), x = R(5, 30), b = R(1, 20);
+      return num(`Ek number ko ${a} se guna karke usme ${b} jodne par ${a * x + b} milta hai. Wo number kya hai?`, x, `Maan lo number ${X} hai. ${a}${X} + ${b} = ${a * x + b} ⇒ ${a}${X} = ${a * x} ⇒ ${X} = ${x}`);
+    }
+    const a = R(2, 6), x = -R(1, 6), b = R(1, 12), c = a * x + b;
+    return num(`${a}${X} + ${b} = ${ns(c)}`, x, `${a}${X} = ${ns(c)} ${MINUS} ${b} = ${ns(c - b)} ⇒ ${X} = ${ns(c - b)} ÷ ${a} = ${ns(x)}`, { neg: true });
+  }
+};
+
+/* ================= 11. Negative numbers ================= */
+export const neg = {
+  id: 'neg', name: 'Negative Numbers', sym: MINUS + '5', color: '--teal', grp: 2, desc: 'Zero se neeche ke numbers, number line aur signs.',
+  tips: [
+    [1, 'Zero se neeche', 'Negative number zero se neeche hote hain: temperature ' + MINUS + '3°C matlab zero se 3 degree kam. Zero se jitna door left, utna chhota number.'],
+    [2, 'Number line', 'Right jaane par number badhta hai, left jaane par ghatta hai.'],
+    [3, 'Jodna', '' + MINUS + '7 + 3: −7 se 3 kadam right, to −4.'],
+    [5, 'Minus minus = plus', '5 ' + MINUS + ' (' + MINUS + '3) = 5 + 3 = 8. Negative ko ghatana matlab jodna.'],
+    [6, 'Guna ke niyam', '+ × + = +, − × − = +, + × − = −. Alag sign to jawab negative, same sign to positive.'],
+    [7, 'Bhaag ke niyam', 'Guna jaise hi: same sign → positive, alag sign → negative.']
+  ],
+  gen(L) {
+    if (L === 1) {
+      const s = new Set(); while (s.size < 4) s.add(R(-9, 9)); const a = [...s], mn = Math.min(...a);
+      return mc(`Sabse chhota number kaun sa hai?`, ns(mn), a.filter(v => v !== mn).map(ns), `Number line par sabse left wala sabse chhota hota hai. Negative numbers mein jiska number bada, wo utna chhota: sahi jawab ${ns(mn)}.`);
+    }
+    if (L === 2) {
+      const st = -R(2, 9), k = R(2, 9), right = Math.random() < 0.6, r = right ? st + k : st - k;
+      return num(`Number line par ${ns(st)} se ${k} kadam ${right ? 'right (daayein)' : 'left (baayein)'} chalo. Kahan pahunche?`, r, `${ns(st)} ${right ? '+' : MINUS} ${k} = ${ns(r)}.`, { neg: true });
+    }
+    if (L === 3) { const a = -R(2, 12), b = R(2, 15); return num(`${sg(a)} + ${b} = ?`, a + b, `${ns(a)} se ${b} kadam right: ${ns(a + b)}.`, { neg: true }); }
+    if (L === 4) {
+      if (Math.random() < 0.5) { const a = R(1, 8), b = R(a + 1, 15); return num(`${a} ${MINUS} ${b} = ?`, a - b, `${a} se ${b} kadam left: ${ns(a - b)}.`, { neg: true }); }
+      const a = -R(1, 9), b = R(1, 9); return num(`${sg(a)} ${MINUS} ${b} = ?`, a - b, `${ns(a)} se ${b} kadam left: ${ns(a - b)}.`, { neg: true });
+    }
+    if (L === 5) { const a = R(2, 12), b = R(2, 9); return num(`${a} ${MINUS} ${sg(-b)} = ?`, a + b, `Minus minus = plus. ${a} ${MINUS} (${MINUS}${b}) = ${a} + ${b} = ${a + b}.`); }
+    if (L === 6) {
+      const a = P([-1, 1]) * R(2, 9), b = P([-1, 1]) * R(2, 9);
+      return num(`${sg(a)} × ${sg(b)} = ?`, a * b, `${Math.abs(a)} × ${Math.abs(b)} = ${Math.abs(a * b)}. ${a * b < 0 ? 'Alag sign, to jawab negative' : 'Same sign, to jawab positive'}: ${ns(a * b)}.`, { neg: true });
+    }
+    if (L === 7) {
+      const q = P([-1, 1]) * R(2, 9), b = P([-1, 1]) * R(2, 9), a = q * b;
+      return num(`${sg(a)} ÷ ${sg(b)} = ?`, q, `${Math.abs(a)} ÷ ${Math.abs(b)} = ${Math.abs(q)}. ${q < 0 ? 'Alag sign, to jawab negative' : 'Same sign, to jawab positive'}: ${ns(q)}.`, { neg: true });
+    }
+    if (L === 8) {
+      if (Math.random() < 0.5) {
+        const s = new Set(); while (s.size < 4) s.add(R(-9, 9)); const asc = [...s].sort((x, y) => x - y);
+        const fm = arr => arr.map(ns).join(', ');
+        const w = [fm(asc.slice().reverse()), fm(shuffle(asc)), fm(shuffle(asc)), fm([asc[1], asc[0], asc[2], asc[3]])];
+        return mc(`Chhote se bade ke order mein kaun sa sahi hai?`, fm(asc), w, `Number line par left se right jao: ${fm(asc)}.`, { small: true });
+      }
+      const a = -R(2, 9), b = P([-1, 1]) * R(2, 9), plus = Math.random() < 0.5, r = Math.abs(a) + (plus ? 1 : -1) * Math.abs(b);
+      return num(`|${ns(a)}| ${plus ? '+' : MINUS} |${ns(b)}| = ?`, r, `|x| ka matlab hai zero se doori (hamesha positive). ${Math.abs(a)} ${plus ? '+' : MINUS} ${Math.abs(b)} = ${ns(r)}.`, { neg: true });
+    }
+    if (L === 9) {
+      const t = R(0, 2);
+      if (t === 0) { const a = -R(2, 9), u = R(3, 12); return num(`Shimla mein raat ka taapman ${ns(a)}°C tha. Subah tak ${u}°C badh gaya. Ab taapman kitna hai?`, a + u, `${ns(a)} + ${u} = ${ns(a + u)}°C.`, { neg: true, u: '°C' }); }
+      if (t === 1) { const a = R(2, 9), d = R(a + 2, a + 12); return num(`Kal taapman ${a}°C tha. Aaj ${d}°C gir gaya. Aaj ka taapman?`, a - d, `${a} ${MINUS} ${d} = ${ns(a - d)}°C.`, { neg: true, u: '°C' }); }
+      const d = R(5, 30), u = R(2, d - 1); return num(`Ek gotakhor samudra ki satah se ${d} m neeche hai. Wo ${u} m upar aaya. Ab uski position (satah = 0) kya hai?`, -d + u, `Neeche ka matlab negative: ${ns(-d)} + ${u} = ${ns(-d + u)} m.`, { neg: true, u: 'm' });
+    }
+    const t = R(0, 3);
+    if (t === 0) { const a = R(2, 6), b = R(2, 6), c = R(1, 15); return num(`${sg(-a)} × ${b} + ${c} = ?`, -a * b + c, `Pehle guna: ${ns(-a)} × ${b} = ${ns(-a * b)}. Phir ${ns(-a * b)} + ${c} = ${ns(-a * b + c)}.`, { neg: true }); }
+    if (t === 1) { const a = R(1, 9), b = R(2, 6), c = R(2, 6); return num(`${a} ${MINUS} ${sg(-b)} × ${c} = ?`, a + b * c, `Pehle guna: ${ns(-b)} × ${c} = ${ns(-b * c)}. Phir ${a} ${MINUS} (${ns(-b * c)}) = ${a + b * c}.`); }
+    if (t === 2) { const a = R(2, 4), b = R(2, 4), c = R(2, 4); return num(`${sg(-a)} × ${sg(-b)} × ${sg(-c)} = ?`, -a * b * c, `Pehle do negative: ${ns(-a)} × ${ns(-b)} = ${a * b}. Phir ${a * b} × ${ns(-c)} = ${ns(-a * b * c)}.`, { neg: true }); }
+    const e = R(2, 6), k = R(2, 8), f = R(1, 9); return num(`${sg(-e * k)} ÷ ${e} ${MINUS} ${sg(-f)} = ?`, -k + f, `Pehle bhaag: ${ns(-e * k)} ÷ ${e} = ${ns(-k)}. Phir ${ns(-k)} ${MINUS} (${ns(-f)}) = ${ns(-k)} + ${f} = ${ns(-k + f)}.`, { neg: true });
+  }
+};
+
+/* ================= 12. Word problems ================= */
+const WT = [
+  { m: 1, g: L => { const n = P(NM), it = P(IT), a = R(3, 9 + L * 3), b = R(2, 9 + L * 3); return num(`${n} ke paas ${a} ${it} hain. Dost ne ${b} aur diye. Ab kitne ${it} hain?`, a + b, `Jodo: ${a} + ${b} = ${a + b}.`); } },
+  { m: 1, g: L => { const n = P(NM), it = P(IT), b = R(2, 9 + L * 3), a = b + R(2, 9 + L * 3); return num(`${n} ke paas ${a} ${it} the. Usne ${b} ${it} baant diye. Kitne bache?`, a - b, `Ghatao: ${a} ${MINUS} ${b} = ${a - b}.`); } },
+  { m: 2, g: L => { const it = P(IT), a = R(3, 12), b = R(2, 9); return num(`Ek dabbe mein ${a} ${it} hain. ${b} dabbon mein kul kitne ${it} honge?`, a * b, `Guna: ${a} × ${b} = ${a * b}.`); } },
+  { m: 3, g: L => { const it = P(IT), a = R(3, 12), b = R(2, 9); return num(`${a * b} ${it} ${b} bachhon mein barabar baante gaye. Ek bachhe ko kitne mile?`, a, `Bhaag: ${a * b} ÷ ${b} = ${a}.`); } },
+  { m: 4, g: L => { const n = P(NM), k = R(2, 6), c = R(5, 25), pay = Math.ceil((k * c + 1) / 50) * 50; return num(`${n} ne ${k} pen ₹${c} ke hisaab se kharide aur dukaandaar ko ₹${pay} diye. Kitne rupaye wapas mile?`, pay - k * c, `Kul kharcha = ${k} × ${c} = ₹${k * c}. Wapas = ${pay} ${MINUS} ${k * c} = ₹${pay - k * c}.`, { u: '₹' }); } },
+  { m: 5, g: L => { const n = P(NM), a = R(8, 14), k = R(2, 4), d = R(2, 8); return num(`${n} ki umar ${a} saal hai. Uske papa ki umar ${n} se ${k} guna hai. ${d} saal baad papa ki umar kitni hogi?`, a * k + d, `Papa abhi ${a} × ${k} = ${a * k} saal ke hain. ${d} saal baad ${a * k} + ${d} = ${a * k + d}.`, { u: 'saal' }); } },
+  { m: 6, g: L => { const v = P([30, 40, 45, 50, 60]), t = R(2, 4), v2 = P([20, 25, 35, 55]), t2 = R(1, 3); return num(`Ek bus ${v} km/h ki raftaar se ${t} ghante chali, phir ${v2} km/h se ${t2} ghante. Kul doori kitni tay hui?`, v * t + v2 * t2, `Doori = raftaar × samay. ${v} × ${t} = ${v * t} km aur ${v2} × ${t2} = ${v2 * t2} km. Kul ${v * t + v2 * t2} km.`, { u: 'km' }); } },
+  { m: 7, g: L => { const N = 20 * R(5, 30), p = P([10, 20, 25, 30, 40, 60]); return num(`Ek school mein ${N} bachhe hain. Unmein ${p}% ladkiyan hain. Ladke kitne hain?`, N - N * p / 100, `Ladkiyan = ${N} × ${p} ÷ 100 = ${N * p / 100}. Ladke = ${N} ${MINUS} ${N * p / 100} = ${N - N * p / 100}.`); } },
+  { m: 8, g: L => { const b = P([3, 4, 5, 6]), a = R(1, b - 1), cap = b * R(5, 20); return num(`Ek tanki ki capacity ${cap} litre hai aur wo ${F(a, b)} bhari hai. Ise poora bharne ke liye kitna paani aur chahiye?`, cap - cap * a / b, `Bhara hua = ${cap} ÷ ${b} × ${a} = ${cap * a / b} L. Baaki = ${cap} ${MINUS} ${cap * a / b} = ${cap - cap * a / b} L.`, { u: 'L' }); } },
+  { m: 9, g: L => { const l = R(12, 40), w = R(8, l - 1), r = P([5, 8, 10, 12, 15]); return num(`${l} m lambe aur ${w} m chaude bagiche ke charon taraf tar lagana hai. ₹${r} per meter ke hisaab se kitna kharcha aayega?`, 2 * (l + w) * r, `Perimeter = 2 × (${l} + ${w}) = ${2 * (l + w)} m. Kharcha = ${2 * (l + w)} × ${r} = ₹${2 * (l + w) * r}.`, { u: '₹' }); } },
+  { m: 10, g: L => { const n = R(5, 20), cp = 20 * R(2, 15), p = P([10, 20, 25]); return num(`Ek dukaandaar ne ${n} cheezein ₹${cp} per piece ke hisaab se kharidi aur ${p}% profit par bechi. Kul profit kitna hua?`, n * cp * p / 100, `Kul cost = ${n} × ${cp} = ₹${n * cp}. Profit = ${n * cp} × ${p} ÷ 100 = ₹${n * cp * p / 100}.`, { u: '₹' }); } },
+  { m: 10, g: L => { const a = R(2, 5), b = R(2, 4), x = R(12, 40), y = R(5, 20); const tot = a * x + b * y; return num(`Ek dukaan par ${a} kilo chawal ₹${x} per kilo aur ${b} kilo daal ₹${y} per kilo kharidi gayi. ₹${Math.ceil(tot / 100) * 100} dene par kitne rupaye wapas milenge?`, Math.ceil(tot / 100) * 100 - tot, `Chawal: ${a} × ${x} = ${a * x}. Daal: ${b} × ${y} = ${b * y}. Total ${tot}. Wapas = ${Math.ceil(tot / 100) * 100} ${MINUS} ${tot} = ${Math.ceil(tot / 100) * 100 - tot}.`, { u: '₹' }); } }
+];
+export const word = {
+  id: 'word', name: 'Kahani wale Sawaal', sym: '?', color: '--orange', grp: 2, desc: 'Zindagi ke sawaal: kharcha, umar, raftaar, profit.',
+  tips: [
+    [1, 'Sawaal ko padho', 'Pehle dhyaan se padho: kya diya hai, kya poochha hai. Phir tay karo ki jodna hai, ghatana hai, guna ya bhaag.'],
+    [4, 'Do kadam wale', 'Kabhi kabhi do kaam karne padte hain: pehle kul kharcha, phir wapas milne wale paise.'],
+    [6, 'Formula yaad rakho', 'Doori = raftaar × samay. Perimeter = 2 × (l + b). Profit = SP ' + MINUS + ' CP.'],
+    [9, 'Bade sawaal', 'Sawaal ko chhote tukdon mein todo aur har tukde ka jawab likhte jao.']
+  ],
+  gen(L) {
+    const pool = WT.filter(t => t.m <= L), hi = pool.filter(t => t.m >= L - 3);
+    return P(hi.length ? hi : pool).g(L);
+  }
+};
+
+/* ================= 13. Geometry ================= */
+const SHAPES = [['Triangle', 3, 'Triangle ki 3 bhujaayein hoti hain.'], ['Square (varg)', 4, 'Square ki 4 barabar bhujaayein aur 4 right angle hote hain.'], ['Pentagon', 5, 'Pentagon ki 5 bhujaayein hoti hain.'], ['Hexagon', 6, 'Hexagon ki 6 bhujaayein hoti hain.'], ['Octagon', 8, 'Octagon ki 8 bhujaayein hoti hain.']];
+const ANG = [['Acute (nyoon kon)', '0° se bada aur 90° se chhota'], ['Right (samkon)', 'bilkul 90°'], ['Obtuse (adhik kon)', '90° se bada aur 180° se chhota'], ['Straight (saral kon)', 'bilkul 180°'], ['Reflex', '180° se bada']];
+export const geo = {
+  id: 'geo', name: 'Shape aur Naap', sym: '△', color: '--pink', grp: 3, desc: 'Shapes, perimeter, area, angles, circle aur Pythagoras.',
+  tips: [
+    [1, 'Shapes', 'Bhujaayein (sides) seedhi lakeeren hain aur kone (corners) jahan ve milti hain.'],
+    [3, 'Perimeter', 'Perimeter = shape ke charon taraf ki kul lambai. Rectangle: 2 × (l + b). Square: 4 × side.'],
+    [4, 'Area', 'Area = shape ke andar ki jagah. Rectangle: l × b. Square: side × side. Unit hoti hai cm².'],
+    [5, 'Angles', 'Acute < 90°, right = 90°, obtuse 90° se 180° ke beech, straight = 180°.'],
+    [6, 'Triangle ka sum', 'Triangle ke teeno angles ka jod hamesha 180° hota hai.'],
+    [7, 'Triangle ka area', 'Area = ½ × base × height.'],
+    [9, 'Circle', 'Circumference = 2πr, Area = πr². Hum π = 22/7 lenge.'],
+    [10, 'Pythagoras', 'Right triangle mein: (hypotenuse)² = (ek side)² + (doosri side)².']
+  ],
+  gen(L) {
+    if (L === 1) { const [nm, n] = P(SHAPES); return mc(`${polySVG(n)}<br>Is shape mein kitni bhujaayein (sides) hain?`, n, [3, 4, 5, 6, 8, 7].filter(v => v !== n), `${nm}: ${n} bhujaayein.`); }
+    if (L === 2) {
+      const all = [...SHAPES.map(s => [s[0], polySVG(s[1]), s[2]]), ['Circle (vritt)', circleSVG(''), 'Circle mein koi seedhi bhuja nahi hoti.'], ['Rectangle (aayat)', rectSVG(9, 5, '', ''), 'Rectangle ki saamne wali bhujaayein barabar aur 4 right angle hote hain.']];
+      const it = P(all); return mc(`${it[1]}<br>Ye kaun sa shape hai?`, it[0], all.map(x => x[0]), it[2]);
+    }
+    if (L === 3 || L === 4) {
+      const isP = L === 3, sq = Math.random() < 0.35; let w = R(3, 20), h = sq ? w : R(3, 20); if (!sq && w === h) h = w + 1;
+      if (sq) {
+        const svg = rectSVG(1, 1, `${w} cm`, `${w} cm`);
+        return isP ? num(`${svg}<br>Square ka perimeter kitna hai?`, 4 * w, `Square: 4 × ${w} = ${4 * w} cm.`, { u: 'cm' }) : num(`${svg}<br>Square ka area kitna hai?`, w * w, `Square: ${w} × ${w} = ${w * w} cm².`, { u: 'cm²' });
+      }
+      const svg = rectSVG(w, h, `${w} cm`, `${h} cm`);
+      return isP ? num(`${svg}<br>Rectangle ka perimeter kitna hai?`, 2 * (w + h), `2 × (${w} + ${h}) = 2 × ${w + h} = ${2 * (w + h)} cm.`, { u: 'cm' }) : num(`${svg}<br>Rectangle ka area kitna hai?`, w * h, `Lambai × chaudai = ${w} × ${h} = ${w * h} cm².`, { u: 'cm²' });
+    }
+    if (L === 5) {
+      const cls = R(0, 4), deg = [R(15, 80), 90, R(100, 170), 180, R(190, 300)][cls];
+      return mc(`${angleSVG(deg)}<br>Ye angle <b>${deg}°</b> ka hai. Ye kaisa angle hai?`, ANG[cls][0], ANG.filter((_, i) => i !== cls).map(a => a[0]), `${ANG[cls][0]} angle ${ANG[cls][1]} hota hai.`, { small: true });
+    }
+    if (L === 6) { const a = R(30, 80), b = R(30, 80); return num(`${triSVG(a + '°', b + '°', '?')}<br>Triangle ka teesra angle kitna hai?`, 180 - a - b, `Triangle ke angles ka sum 180° hota hai. 180 ${MINUS} ${a} ${MINUS} ${b} = ${180 - a - b}°.`, { u: '°' }); }
+    if (L === 7) { const b = 2 * R(2, 10), h = R(3, 15); return num(`${rtSVG(b + ' cm', h + ' cm', '')}<br>Is triangle ka area kitna hai?`, b * h / 2, `Area = ½ × base × height = ½ × ${b} × ${h} = ${b * h / 2} cm².`, { u: 'cm²' }); }
+    if (L === 8) {
+      const t = R(0, 2);
+      if (t === 0) { const b = R(5, 20), h = R(4, 15); return num(`Parallelogram ka base ${b} cm aur height ${h} cm hai. Area kitna hoga?`, b * h, `Area = base × height = ${b} × ${h} = ${b * h} cm².`, { u: 'cm²' }); }
+      if (t === 1) { const a = R(4, 12), b = R(a + 2, a + 10), h = 2 * R(2, 8); return num(`Trapezium ki samantar bhujaayein ${a} cm aur ${b} cm hain, height ${h} cm hai. Area kitna hoga?`, (a + b) * h / 2, `Area = ½ × (${a} + ${b}) × ${h} = ½ × ${a + b} × ${h} = ${(a + b) * h / 2} cm².`, { u: 'cm²' }); }
+      const l = R(8, 25), w = R(3, l - 1); return num(`Ek rectangle ka perimeter ${2 * (l + w)} cm aur lambai ${l} cm hai. Uski chaudai kitni hai?`, w, `Perimeter = 2 × (l + b) ⇒ l + b = ${l + w}. Chaudai = ${l + w} ${MINUS} ${l} = ${w} cm.`, { u: 'cm' });
+    }
+    if (L === 9) {
+      const k = R(1, 3), r = 7 * k;
+      if (Math.random() < 0.5) return num(`${circleSVG('r = ' + r + ' cm')}<br>π = ${F(22, 7)} lekar circle ki circumference (gherai) batao.`, 44 * k, `C = 2πr = 2 × ${F(22, 7)} × ${r} = ${44 * k} cm.`, { u: 'cm' });
+      return num(`${circleSVG('r = ' + r + ' cm')}<br>π = ${F(22, 7)} lekar circle ka area batao.`, 154 * k * k, `A = πr² = ${F(22, 7)} × ${r} × ${r} = 22 × ${r} × ${k} = ${154 * k * k} cm².`, { u: 'cm²' });
+    }
+    const tr = P([[3, 4, 5], [5, 12, 13], [8, 15, 17], [6, 8, 10], [9, 12, 15], [7, 24, 25], [20, 21, 29]]), [a, b, c] = tr;
+    if (Math.random() < 0.55) return num(`${rtSVG(a + ' cm', b + ' cm', '?')}<br>Hypotenuse (sabse lambi bhuja) kitni hai?`, c, `c² = a² + b² = ${a * a} + ${b * b} = ${c * c}. Isliye c = ${c} cm.`, { u: 'cm' });
+    return num(`${rtSVG('? cm', b + ' cm', c + ' cm')}<br>Neeche wali bhuja (?) kitni hai?`, a, `a² = c² ${MINUS} b² = ${c * c} ${MINUS} ${b * b} = ${a * a}. Isliye a = ${a} cm.`, { u: 'cm' });
+  }
+};
+
+/* ================= 14. Time ================= */
+const tm = (h, m) => { const hh = ((h % 12) + 12) % 12 || 12; return `${hh}:${String(m).padStart(2, '0')}`; };
+const t24 = (h, m) => String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+function clockWrongs(h, m) {
+  const s = new Set([tm(h + 1, m), tm(h - 1, m), tm(h, (m + (m < 30 ? 30 : -30) + 60) % 60), tm(h, (m + 10) % 60), tm(h, (m + 50) % 60)]);
+  if (m % 5 === 0) s.add(tm(Math.floor(m / 5) || 12, (h % 12) * 5));
+  s.delete(tm(h, m));
+  return shuffle([...s]);
+}
+function clockQ(mins, exact) {
+  const h = R(1, 12), m = exact ? R(1, 59) : P(mins);
+  const min = Math.floor(m / 5);
+  const e = m % 5 === 0 ? `Chhota kaanta ${h} ke paas hai, bada kaanta ${min === 0 ? '12' : min} par hai (${min} × 5 = ${m} minute). Samay ${tm(h, m)}.`
+    : `Chhota kaanta ${h} ke paas hai. Bada kaanta ${min} se ${m % 5} chhoti lakeer aage hai: ${min * 5} + ${m % 5} = ${m} minute. Samay ${tm(h, m)}.`;
+  return mc(`${clockSVG(h, m)}<br>Ghadi mein kya samay hai?`, tm(h, m), clockWrongs(h, m), e);
+}
+export const time = {
+  id: 'time', name: 'Ghadi aur Samay', sym: '⏱', color: '--green', grp: 3, desc: 'Ghadi padhna, samay jodna-ghatana, raftaar-doori-samay.',
+  tips: [
+    [1, 'Do kaante', 'Chhota kaanta ghante batata hai, bada kaanta minute. Bada kaanta 12 par ho to poora ghanta (o\'clock).'],
+    [2, 'Minute padhna', 'Bade kaante ka har number 5 minute hai: 3 par = 15 minute, 6 par = 30 minute, 9 par = 45 minute.'],
+    [6, 'Samay jodna', 'Pehle minute jodo. 60 minute hone par ek ghanta badhao. 3:40 + 30 min = 4:10.'],
+    [7, '24 ghante wali ghadi', '13:00 = 1 PM, 18:30 = 6:30 PM. 12 ke baad 12 jodte jao.'],
+    [10, 'Raftaar, doori, samay', 'Doori = raftaar × samay. Raftaar = doori ÷ samay. Samay = doori ÷ raftaar.']
+  ],
+  gen(L) {
+    if (L === 1) return clockQ([0]);
+    if (L === 2) return clockQ([0, 30]);
+    if (L === 3) return clockQ([15, 45]);
+    if (L === 4) return clockQ(Array.from({ length: 12 }, (_, i) => i * 5));
+    if (L === 5) return clockQ(null, true);
+    if (L === 6) {
+      const h = R(1, 12), m = 5 * R(0, 11), d = 5 * R(3, 18), T = h * 60 + m + d, rh = Math.floor(T / 60), rm = T % 60;
+      return mc(`Abhi <b>${tm(h, m)}</b> baje hain. ${d} minute baad kitne baje honge?`, tm(rh, rm), [tm(rh + 1, rm), tm(rh - 1, rm), tm(rh, (rm + 10) % 60), tm(rh, (rm + 50) % 60)], `${tm(h, m)} + ${d} minute: pehle minute jodo, 60 hone par ghanta badhao. Jawab ${tm(rh, rm)}.`);
+    }
+    if (L === 7) {
+      const s = R(6, 17) * 60 + 5 * R(0, 11), d = 5 * R(6, 60), en = s + d;
+      return num(`Ek train <b>${t24(Math.floor(s / 60), s % 60)}</b> par chali aur <b>${t24(Math.floor(en / 60), en % 60)}</b> par pahunchi. Safar kitne minute ka tha?`, d, `${t24(Math.floor(en / 60), en % 60)} ${MINUS} ${t24(Math.floor(s / 60), s % 60)}: ghante ka antar × 60 + minute ka antar = ${d} minute.`, { u: 'min' });
+    }
+    if (L === 8) {
+      const hh = R(1, 11), mm = P([0, 15, 20, 30, 45]);
+      if (Math.random() < 0.5) return mc(`<b>${hh}:${String(mm).padStart(2, '0')} PM</b> ko 24 ghante ki ghadi mein likho.`, t24(hh + 12, mm), [t24(hh, mm), t24(hh + 13, mm), t24(hh + 11, mm)], `PM mein 12 jodte hain: ${hh} + 12 = ${hh + 12}. Jawab ${t24(hh + 12, mm)}.`);
+      return mc(`<b>${t24(hh + 12, mm)}</b> ko 12 ghante ki ghadi mein likho.`, `${hh}:${String(mm).padStart(2, '0')} PM`, [`${hh}:${String(mm).padStart(2, '0')} AM`, `${hh % 11 + 1}:${String(mm).padStart(2, '0')} PM`, `${(hh + 9) % 11 + 1}:${String(mm).padStart(2, '0')} PM`], `12 se bada ghanta ho to PM hota hai. ${hh + 12} ${MINUS} 12 = ${hh}. Jawab ${hh}:${String(mm).padStart(2, '0')} PM.`);
+    }
+    if (L === 9) {
+      const s = R(20, 23) * 60 + 5 * R(0, 11), d = R(6, 9) * 60 + 5 * R(0, 11), en = (s + d) % 1440;
+      return num(`Ek bachha raat <b>${t24(Math.floor(s / 60), s % 60)}</b> par soya aur subah <b>${t24(Math.floor(en / 60), en % 60)}</b> par utha. Wo kitne minute soya?`, d, `Aadhi raat (24:00) tak ${1440 - s} minute, phir ${en} minute. Total ${1440 - s} + ${en} = ${d} minute.`, { u: 'min' });
+    }
+    const v = P([20, 30, 40, 45, 50, 60, 75, 80]), t = P([2, 3, 4, 5, 2.5, 1.5]), d = v * t, k = R(0, 2);
+    if (k === 0) return num(`Ek gaadi ${v} km/h ki raftaar se ${t} ghante chali. Kitni doori tay ki?`, d, `Doori = raftaar × samay = ${v} × ${t} = ${d} km.`, { u: 'km', dec: true });
+    if (k === 1) return num(`Ek gaadi ne ${d} km ka safar ${t} ghante mein poora kiya. Uski raftaar kitni thi?`, v, `Raftaar = doori ÷ samay = ${d} ÷ ${t} = ${v} km/h.`, { u: 'km/h' });
+    return num(`${d} km ka safar ${v} km/h ki raftaar se kitne ghante mein poora hoga?`, t, `Samay = doori ÷ raftaar = ${d} ÷ ${v} = ${t} ghante.`, { u: 'ghante', dec: true });
+  }
+};
+
+/* ================= 15. Units and money ================= */
+export const units = {
+  id: 'units', name: 'Naap-Tol aur Paise', sym: 'cm', color: '--red', grp: 3, desc: 'Units badalna, paise aur shopping ke sawaal.',
+  tips: [
+    [1, 'Lambai ki units', '1 m = 100 cm. 1 km = 1000 m. Bade se chhota karne par guna, chhote se bada karne par bhaag.'],
+    [2, 'Vazan aur volume', '1 kg = 1000 g. 1 L = 1000 mL.'],
+    [4, 'Milaa kar', '3 m 20 cm = 300 cm + 20 cm = 320 cm. Pehle bade unit ko chhote mein badlo phir jodo.'],
+    [6, 'Paise', '1 rupaya = 100 paise. Wapas milne wale paise = diye hue ' + MINUS + ' kharcha.'],
+    [8, 'Ek ka daam', 'Pehle ek cheez ka daam nikalo (bhaag), phir chahiye utni ka (guna).'],
+    [10, 'Speed ke units', '1 km/h = 5/18 m/s. Isliye 36 km/h = 10 m/s.']
+  ],
+  gen(L) {
+    if (L === 1) { if (Math.random() < 0.5) { const n = R(1, 9); return num(`${n} m = ${BOX} cm`, n * 100, `1 m = 100 cm. ${n} × 100 = ${n * 100}.`, { u: 'cm' }); } const n = R(1, 9); return num(`${n * 100} cm = ${BOX} m`, n, `100 cm = 1 m. ${n * 100} ÷ 100 = ${n}.`, { u: 'm' }); }
+    if (L === 2) { const n = R(2, 9), t = P([['km', 'm'], ['kg', 'g']]); if (Math.random() < 0.5) return num(`${n} ${t[0]} = ${BOX} ${t[1]}`, n * 1000, `1 ${t[0]} = 1000 ${t[1]}. ${n} × 1000 = ${n * 1000}.`, { u: t[1] }); return num(`${n * 1000} ${t[1]} = ${BOX} ${t[0]}`, n, `1000 ${t[1]} = 1 ${t[0]}. ${n * 1000} ÷ 1000 = ${n}.`, { u: t[0] }); }
+    if (L === 3) { const t = P([['L', 1000, 'mL'], ['ghante', 60, 'minute'], ['din', 24, 'ghante']]), n = R(2, 9); return num(`${n} ${t[0]} = ${BOX} ${t[2]}`, n * t[1], `1 ${t[0]} = ${t[1]} ${t[2]}. ${n} × ${t[1]} = ${n * t[1]}.`, { u: t[2] }); }
+    if (L === 4) { const t = P([['m', 'cm', 100], ['kg', 'g', 1000], ['L', 'mL', 1000], ['km', 'm', 1000]]), a = R(2, 9), b = P([R(1, 99), 5 * R(1, 19)]), bb = t[2] === 100 ? b : b * 5; return num(`${a} ${t[0]} ${bb} ${t[1]} = ${BOX} ${t[1]}`, a * t[2] + bb, `${a} ${t[0]} = ${a * t[2]} ${t[1]}. Ab ${a * t[2]} + ${bb} = ${a * t[2] + bb} ${t[1]}.`, { u: t[1] }); }
+    if (L === 5) { const t = P([['cm', 'm', 100], ['g', 'kg', 1000], ['m', 'km', 1000], ['mL', 'L', 1000]]), x = R(11, 999); return num(`${x} ${t[0]} = ${BOX} ${t[1]}`, x / t[2], `${x} ÷ ${t[2]} = ${String(rup(x / t[2]))} ${t[1]}.`, { u: t[1], dec: true }); }
+    if (L === 6) {
+      const t = R(0, 2);
+      if (t === 0) { const p = R(101, 999); return num(`${p} paise = ₹ ${BOX}`, p / 100, `100 paise = ₹1. ${p} ÷ 100 = ${String(rup(p / 100))}.`, { dec: true, u: '₹' }); }
+      if (t === 1) { const r = R(2, 90); return num(`₹${r} = ${BOX} paise`, r * 100, `₹1 = 100 paise. ${r} × 100 = ${r * 100}.`, { u: 'paise' }); }
+      const cost = R(23, 178), pay = Math.ceil((cost + 1) / 50) * 50; return num(`Ek cheez ₹${cost} ki hai. Aapne ₹${pay} diye. Kitne wapas milenge?`, pay - cost, `${pay} ${MINUS} ${cost} = ${pay - cost}.`, { u: '₹' });
+    }
+    if (L === 7) { const n = R(3, 9), c = R(6, 25), d = R(20, 80); return num(`${n} pen ₹${c} per pen ke hisaab se aur ek copy ₹${d} ki kharidi. Total kitna hua?`, n * c + d, `${n} × ${c} = ${n * c}. Copy jodo: ${n * c} + ${d} = ${n * c + d}.`, { u: '₹' }); }
+    if (L === 8) {
+      if (Math.random() < 0.5) { const n = R(3, 9), r = R(12, 90), m = R(2, 12); return num(`${n} kg chawal ₹${n * r} ke hain. ${m} kg chawal kitne ke honge?`, r * m, `1 kg = ${n * r} ÷ ${n} = ₹${r}. ${m} kg = ${r} × ${m} = ₹${r * m}.`, { u: '₹' }); }
+      const n = R(6, 12), r = R(3, 15), m = R(2, 5); return num(`${n} pencil ₹${n * r} ki aati hain. ${m} pencil ka daam kya hoga?`, r * m, `1 pencil = ${n * r} ÷ ${n} = ₹${r}. ${m} pencil = ${r} × ${m} = ₹${r * m}.`, { u: '₹' });
+    }
+    if (L === 9) { const t = P([['kg', 'g', 1000], ['L', 'mL', 1000], ['m', 'cm', 100], ['km', 'm', 1000]]), x = R(11, 999) / 100; return num(`${dstr(x, 2)} ${t[0]} = ${BOX} ${t[1]}`, Math.round(x * t[2]), `${dstr(x, 2)} × ${t[2]} = ${Math.round(x * t[2])} ${t[1]}.`, { u: t[1] }); }
+    const t = R(0, 3);
+    if (t === 0) { const k = 18 * R(1, 8); return num(`${k} km/h = ${BOX} m/s`, k * 5 / 18, `${k} km/h = ${k} × 1000 ÷ 3600 = ${k} × 5 ÷ 18 = ${k * 5 / 18} m/s.`, { u: 'm/s', dec: true }); }
+    if (t === 1) { const h = R(1, 5), m = R(5, 55); return num(`${h} ghante ${m} minute = ${BOX} minute`, h * 60 + m, `${h} × 60 = ${h * 60}. ${h * 60} + ${m} = ${h * 60 + m} minute.`, { u: 'min' }); }
+    if (t === 2) { const n = R(2, 9); return num(`${n} m² = ${BOX} cm²`, n * 10000, `1 m = 100 cm, to 1 m² = 100 × 100 = 10000 cm². ${n} × 10000 = ${n * 10000}.`, { u: 'cm²' }); }
+    const n = R(2, 9); return num(`${n} L = ${BOX} cm³ (1 mL = 1 cm³ hota hai)`, n * 1000, `${n} L = ${n * 1000} mL = ${n * 1000} cm³.`, { u: 'cm³' });
+  }
+};
+
+export const ALL_GAMES = [addsub, mult, div, place, numth, frac, dec, pct, bodmas, algebra, neg, word, geo, time, units];
+export const GROUPS = ['Ginti aur Numbers', 'Bhinn, Decimal aur Percent', 'Dimaag lagao', 'Shape, Samay aur Naap'];

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffd23f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Ganit Ghar – Offline Math Learning, Quiz & Mini-Games Suite for Mobile & Desktop">
+
+  <title>Ganit Ghar – Math ki Seedhiyan</title>
+
+  <!-- PWA & Icons -->
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="wrap">
+    <!-- Top Header -->
+    <header class="hdr">
+      <button class="logo" data-nav="home" aria-label="Ganit Ghar Home">
+        <span class="mark">π</span>
+        <span class="lt">Ganit Ghar</span>
+      </button>
+
+      <div class="tools">
+        <div class="chip" title="Kul stars">
+          ⭐ <span class="star-counter-val">0</span>
+        </div>
+        <button class="chip desktop-only" data-nav="bgm-toggle" id="bgm-quick-btn" title="Music On/Off">
+          <span id="bgm-quick-icon">🎵</span>
+        </button>
+        <button class="chip" data-nav="settings" id="settings-btn" title="Settings">
+          ⚙️
+        </button>
+      </div>
+    </header>
+
+    <!-- Main View Container -->
+    <main id="view"></main>
+  </div>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="bottom-nav" id="mobile-bottom-nav">
+    <div class="bottom-nav-inner">
+      <button class="nav-item active" data-nav="home">
+        <span class="nav-icon">🏠</span>
+        <span>Home</span>
+      </button>
+      <button class="nav-item" data-nav="sprint">
+        <span class="nav-icon">⚡</span>
+        <span>Sprint</span>
+      </button>
+      <button class="nav-item" data-nav="memory">
+        <span class="nav-icon">🃏</span>
+        <span>Match</span>
+      </button>
+      <button class="nav-item" data-nav="target">
+        <span class="nav-icon">🎯</span>
+        <span>Lakshya</span>
+      </button>
+      <button class="nav-item" data-nav="vedic">
+        <span class="nav-icon">🪄</span>
+        <span>Tricks</span>
+      </button>
+    </div>
+  </nav>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "appId": "com.ganitghar.app",
+  "appName": "Ganit Ghar",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#e9f4fb",
+    "allowMixedContent": true
+  }
+}

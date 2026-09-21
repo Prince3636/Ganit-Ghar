@@ -1,0 +1,21 @@
+import fs from 'fs';
+import path from 'path';
+
+console.log('----------------------------------------------------');
+console.log('🎉 Web build and Capacitor sync complete!');
+console.log('');
+console.log('To generate the Android APK file:');
+console.log('1. Via Android Studio:');
+console.log('   Run: npx cap open android');
+console.log('   Then click Build > Build Bundle(s) / APK(s) > Build APK(s)');
+console.log('');
+console.log('2. Via Command Line (if Android SDK & Gradle installed):');
+console.log('   cd android');
+console.log('   ./gradlew assembleDebug (Linux/Mac) or gradlew.bat assembleDebug (Windows)');
+console.log('   The APK will be saved at:');
+console.log('   android/app/build/outputs/apk/debug/app-debug.apk');
+console.log('');
+console.log('3. Via GitHub Actions (.github/workflows/build.yml):');
+console.log('   Push this project to your GitHub repo, and GitHub Actions');
+console.log('   will automatically compile and build the APK for you!');
+console.log('----------------------------------------------------');

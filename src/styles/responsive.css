@@ -1,0 +1,166 @@
+/* Responsive Layout & Mobile/Desktop Dual UI Controls */
+
+/* -------------------------------------------------------------
+   Mobile Bottom Navigation Bar
+------------------------------------------------------------- */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--panel);
+  border-top: 3px solid var(--line);
+  box-shadow: 0 -4px 10px rgba(0,0,0,0.06);
+  z-index: 100;
+  padding: 6px max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+}
+
+.bottom-nav-inner {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  padding: 6px 10px;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.75rem;
+  border-radius: 12px;
+  transition: transform 0.08s, color 0.08s;
+}
+
+.nav-item .nav-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.nav-item.active {
+  color: var(--ink);
+  background: var(--tint);
+  border: 2px solid var(--line);
+  transform: translateY(-2px);
+  box-shadow: 2px 2px 0 var(--line);
+}
+
+/* -------------------------------------------------------------
+   Media Queries: Mobile screens (< 768px)
+------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .bottom-nav {
+    display: block;
+  }
+
+  body {
+    padding-bottom: 76px;
+  }
+
+  .hdr .tools .chip.desktop-only {
+    display: none;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.8rem, 8vw, 2.5rem);
+  }
+
+  .paper {
+    padding: 14px 14px 18px 42px;
+    box-shadow: 5px 5px 0 var(--line);
+  }
+
+  .paper::before { left: 30px; }
+  .paper::after { left: 7px; }
+
+  .lvgrid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+
+  .memory-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 420px) {
+  .logo .lt {
+    font-size: 1.25rem;
+  }
+
+  .pad {
+    gap: 6px;
+  }
+
+  .k {
+    min-height: 48px;
+    font-size: 1.35rem;
+  }
+
+  .mopts {
+    grid-template-columns: 1fr;
+  }
+
+  .memory-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+}
+
+/* -------------------------------------------------------------
+   Media Queries: Tablet & Desktop (>= 769px)
+------------------------------------------------------------- */
+@media (min-width: 769px) {
+  body {
+    padding-bottom: 24px;
+  }
+
+  .qgrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) 380px;
+    gap: 36px;
+    align-items: start;
+  }
+
+  .qgrid .pad {
+    max-width: none;
+  }
+
+  .paper.quiz {
+    padding: 28px 32px 30px 72px;
+    max-width: 960px;
+  }
+
+  .paper.quiz::before { left: 48px; }
+  .paper.quiz::after { left: 14px; }
+
+  .lvgrid {
+    grid-template-columns: repeat(10, 1fr);
+    gap: 12px;
+  }
+
+  .lv {
+    aspect-ratio: 1/1.05;
+  }
+}
+
+/* Hide header during focused quiz on small screens */
+@media (max-width: 719px) {
+  body.inquiz .hdr {
+    display: none;
+  }
+}
