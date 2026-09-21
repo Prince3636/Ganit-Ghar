@@ -11,7 +11,7 @@ import {
 
 import {
   soundCorrect, soundWrong, soundCheer, soundClick,
-  setSfxEnabled, setSfxVolume
+  setSfxEnabled, setSfxVolume, resumeAudio
 } from './audio/sfx.js';
 
 import {
@@ -139,6 +139,20 @@ function renderHome() {
         <div class="rs">${sk ? `🔥 ${sk} din streak` : '🔥 Aaj shuru karo'}</div>
       </div>
     </section>
+
+    <!-- Background Music Control Banner -->
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; background:var(--panel); border:3px solid var(--line); border-radius:18px; padding:12px 18px; margin:8px 0 16px; box-shadow:4px 4px 0 var(--line);">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span style="font-size:1.8rem; display:grid; place-items:center; width:44px; height:44px; background:var(--tint); border:2px solid var(--line); border-radius:12px;">🎵</span>
+        <div>
+          <b style="display:block; font-size:1.05rem;">Soothing Study Music (100% Offline)</b>
+          <small style="color:var(--muted); font-size:0.88rem;">Padhte waqt focus ke liye soft background melody</small>
+        </div>
+      </div>
+      <button class="btn sm" data-nav="bgm-toggle" style="background:var(--yellow); color:var(--on); font-weight:800;">
+        Music Play / Mute 🔊
+      </button>
+    </div>
 
     <!-- 4 Exciting Mini-Games Hub -->
     <h2 class="gh">Naye Mazedaar Math Games</h2>
@@ -626,13 +640,16 @@ document.addEventListener('keydown', e => {
 });
 
 // Autoplay policy unlocked on first interaction
-const unlockAudioOnTouch = () => {
-  if (isBgmEnabled()) {
-    startBgm();
-  }
-  window.removeEventListener('pointerdown', unlockAudioOnTouch);
-  window.removeEventListener('keydown', unlockAudioOnTouch);
+const unlockAudioOnTouch = async () => {
+  try {
+    await resumeAudio();
+    if (isBgmEnabled()) {
+      await startBgm();
+    }
+    updateNavBadges(totalStars());
+  } catch (e) {}
 };
+window.addEventListener('click', unlockAudioOnTouch);
 window.addEventListener('pointerdown', unlockAudioOnTouch);
 window.addEventListener('keydown', unlockAudioOnTouch);
 
@@ -641,9 +658,9 @@ const savedTheme = storage.get('theme', 'light');
 document.documentElement.setAttribute('data-theme', savedTheme);
 
 setBgmEnabled(storage.get('bgm', true));
-setBgmVolume(storage.get('bgmVol', 0.25));
+setBgmVolume(storage.get('bgmVol', 0.65));
 setSfxEnabled(storage.get('sound', true));
-setSfxVolume(storage.get('sfxVol', 0.5));
+setSfxVolume(storage.get('sfxVol', 0.7));
 
 // Initialize Navigation & Mount
 setupNavigation((target) => navigateTo(target), totalStars);

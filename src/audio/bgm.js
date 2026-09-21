@@ -1,61 +1,70 @@
 // Procedural Web Audio Background Music (BGM) Engine
 // 100% Offline, Synthesized in Real-Time with Zero External Audio Assets
-import { getAudioContext } from './sfx.js';
+import { getAudioContext, resumeAudio } from './sfx.js';
 
 let isBgmPlaying = false;
 let bgmEnabled = true;
-let bgmVolume = 0.25;
+let bgmVolume = 0.65; // audible, pleasant default volume
 let bgmTimer = null;
 let masterBgmGain = null;
+let lowpassFilter = null;
 
-// Chords progression: C maj -> G maj -> A min -> F maj (each 4 beats)
+// Catchy, cheerful lo-fi pentatonic chord progression: C -> G -> Am -> F
+// Each chord lasts 4 beats. Melodic notes designed for gentle, pleasant background study
 const CHORDS = [
-  { root: 130.81, freqs: [261.63, 329.63, 392.00, 523.25] }, // C (C3, C4, E4, G4, C5)
-  { root: 98.00,  freqs: [196.00, 246.94, 293.66, 392.00] }, // G (G2, G3, B3, D4, G4)
-  { root: 110.00, freqs: [220.00, 261.63, 329.63, 440.00] }, // Am (A2, A3, C4, E4, A4)
-  { root: 87.31,  freqs: [174.61, 220.00, 261.63, 349.23] }  // F (F2, F3, A3, C4, F4)
+  // C major: C, E, G, C
+  { root: 130.81, melody: [261.63, 329.63, 392.00, 523.25, 392.00, 329.63, 261.63, 392.00] },
+  // G major: G, B, D, G
+  { root: 98.00,  melody: [196.00, 246.94, 293.66, 392.00, 293.66, 246.94, 196.00, 293.66] },
+  // A minor: A, C, E, A
+  { root: 110.00, melody: [220.00, 261.63, 329.63, 440.00, 329.63, 261.63, 220.00, 329.63] },
+  // F major: F, A, C, F
+  { root: 87.31,  melody: [174.61, 220.00, 261.63, 349.23, 261.63, 220.00, 174.61, 261.63] }
 ];
 
-const TEMPO = 112; // BPM
+const TEMPO = 110; // BPM
 const BEAT_DURATION = 60 / TEMPO;
 let currentChordIdx = 0;
-let currentStep = 0;
+let stepCounter = 0;
 
 function ensureMasterGain(ctx) {
   if (!masterBgmGain) {
     masterBgmGain = ctx.createGain();
-    // Warm low-pass filter to make synth sounds cozy and smooth (not harsh)
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 1600;
+    lowpassFilter = ctx.createBiquadFilter();
+    lowpassFilter.type = 'lowpass';
+    lowpassFilter.frequency.value = 2400; // Warm, gentle tone
 
-    masterBgmGain.connect(filter);
-    filter.connect(ctx.destination);
+    masterBgmGain.connect(lowpassFilter);
+    lowpassFilter.connect(ctx.destination);
   }
-  masterBgmGain.gain.setValueAtTime(bgmEnabled ? bgmVolume : 0.0001, ctx.currentTime);
+  const currentGain = bgmEnabled ? bgmVolume : 0.0001;
+  masterBgmGain.gain.setValueAtTime(currentGain, ctx.currentTime);
   return masterBgmGain;
 }
 
-function playNote(ctx, freq, duration, type = 'triangle', vol = 0.15) {
+function playSynthNote(ctx, freq, duration, type = 'triangle', vol = 0.35) {
   if (!bgmEnabled) return;
   try {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    const t = ctx.currentTime;
+    const now = ctx.currentTime;
 
     osc.type = type;
-    osc.frequency.setValueAtTime(freq, t);
+    osc.frequency.setValueAtTime(freq, now);
 
-    gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.linearRampToValueAtTime(vol, t + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+    const attack = Math.min(0.04, duration * 0.2);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(vol, now + attack);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
 
     osc.connect(gain);
     gain.connect(masterBgmGain);
 
-    osc.start(t);
-    osc.stop(t + duration);
-  } catch (e) {}
+    osc.start(now);
+    osc.stop(now + duration);
+  } catch (e) {
+    console.warn('Synth play error:', e);
+  }
 }
 
 function tickBgm() {
@@ -67,35 +76,42 @@ function tickBgm() {
 
   const chord = CHORDS[currentChordIdx];
 
-  // Bass note on beat 0 and beat 2 of the measure
-  if (currentStep % 4 === 0) {
-    playNote(ctx, chord.root, BEAT_DURATION * 1.8, 'sine', 0.22);
-  } else if (currentStep % 4 === 2) {
-    playNote(ctx, chord.root * 1.5, BEAT_DURATION * 0.9, 'sine', 0.14);
+  // Bass note on beats 0 and 2
+  if (stepCounter % 4 === 0) {
+    playSynthNote(ctx, chord.root, BEAT_DURATION * 1.5, 'sine', 0.45);
+  } else if (stepCounter % 4 === 2) {
+    playSynthNote(ctx, chord.root * 1.5, BEAT_DURATION * 0.9, 'sine', 0.3);
   }
 
-  // Melodic arpeggio pattern on 8th notes
-  const noteIndex = [0, 1, 2, 3, 2, 1, 3, 1][currentStep % 8];
-  const freq = chord.freqs[noteIndex];
-  playNote(ctx, freq, BEAT_DURATION * 0.45, 'triangle', 0.09);
+  // Melodic arpeggio on 8th notes (steps 0 to 7)
+  const melFreq = chord.melody[stepCounter % 8];
+  playSynthNote(ctx, melFreq, BEAT_DURATION * 0.45, 'triangle', 0.25);
 
-  // Soft high twinkle on step 3 and 7
-  if (currentStep % 8 === 3 || currentStep % 8 === 7) {
-    playNote(ctx, freq * 2, BEAT_DURATION * 0.25, 'sine', 0.04);
+  // Soft high bell chime on beat 3
+  if (stepCounter % 8 === 3) {
+    playSynthNote(ctx, melFreq * 2, BEAT_DURATION * 0.3, 'sine', 0.12);
   }
 
-  currentStep = (currentStep + 1) % 16;
-  if (currentStep % 4 === 0) {
+  stepCounter = (stepCounter + 1) % 16;
+  if (stepCounter % 4 === 0) {
     currentChordIdx = (currentChordIdx + 1) % CHORDS.length;
   }
 
   bgmTimer = setTimeout(tickBgm, (BEAT_DURATION / 2) * 1000);
 }
 
-export function startBgm() {
+export async function startBgm() {
+  await resumeAudio();
+  const ctx = getAudioContext();
+  if (ctx && ctx.state === 'suspended') {
+    try {
+      await ctx.resume();
+    } catch (e) {}
+  }
+
   if (isBgmPlaying) return;
   isBgmPlaying = true;
-  currentStep = 0;
+  stepCounter = 0;
   currentChordIdx = 0;
   tickBgm();
 }
@@ -108,31 +124,45 @@ export function stopBgm() {
   }
 }
 
-export function toggleBgm() {
+export async function toggleBgm() {
+  await resumeAudio();
   bgmEnabled = !bgmEnabled;
+
   const ctx = getAudioContext();
   if (ctx && masterBgmGain) {
     masterBgmGain.gain.setValueAtTime(bgmEnabled ? bgmVolume : 0.0001, ctx.currentTime);
   }
-  if (bgmEnabled && !isBgmPlaying) {
-    startBgm();
+
+  if (bgmEnabled) {
+    if (!isBgmPlaying) {
+      startBgm();
+    }
+  } else {
+    stopBgm();
   }
   return bgmEnabled;
 }
 
-export function setBgmEnabled(val) {
+export async function setBgmEnabled(val) {
   bgmEnabled = !!val;
+  if (bgmEnabled) {
+    await resumeAudio();
+    startBgm();
+  } else {
+    stopBgm();
+  }
   const ctx = getAudioContext();
   if (ctx && masterBgmGain) {
     masterBgmGain.gain.setValueAtTime(bgmEnabled ? bgmVolume : 0.0001, ctx.currentTime);
-  }
-  if (bgmEnabled && !isBgmPlaying) {
-    startBgm();
   }
 }
 
 export function isBgmEnabled() {
   return bgmEnabled;
+}
+
+export function isBgmActive() {
+  return isBgmPlaying && bgmEnabled;
 }
 
 export function setBgmVolume(vol) {
