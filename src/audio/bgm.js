@@ -165,6 +165,32 @@ export function isBgmActive() {
   return isBgmPlaying && bgmEnabled;
 }
 
+let isPausedByBackground = false;
+
+export function pauseBgmForBackground() {
+  if (isBgmPlaying) {
+    isPausedByBackground = true;
+    isBgmPlaying = false;
+    if (bgmTimer) {
+      clearTimeout(bgmTimer);
+      bgmTimer = null;
+    }
+  }
+}
+
+export async function resumeAudioFromBackground() {
+  const ctx = await resumeAudio();
+  if (ctx && ctx.state === 'suspended') {
+    try {
+      await ctx.resume();
+    } catch (e) {}
+  }
+  if (isPausedByBackground && bgmEnabled) {
+    isPausedByBackground = false;
+    startBgm();
+  }
+}
+
 export function setBgmVolume(vol) {
   bgmVolume = Math.max(0, Math.min(1, vol));
   const ctx = getAudioContext();

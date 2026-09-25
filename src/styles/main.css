@@ -765,3 +765,70 @@ button.chip:active {
 @keyframes up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 @keyframes bounce { 0% { transform: scale(0.3); } 55% { transform: scale(1.15); } 100% { transform: scale(1); } }
+
+/* ================= SVG Diagram Styles (Clock, Shapes, Angles, Geometry) ================= */
+.sv {
+  display: block;
+  margin: 10px auto;
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.sv .sf {
+  fill: var(--yellow);
+  stroke: var(--ink);
+  stroke-width: 3.5;
+  stroke-linejoin: round;
+}
+
+.sv .sf2 {
+  fill: #ffffff;
+  stroke: #10263a;
+  stroke-width: 3.5;
+}
+
+.sv .pf {
+  fill: var(--yellow);
+  stroke: var(--ink);
+  stroke-width: 2.5;
+}
+
+.sv .pe {
+  fill: var(--panel);
+  stroke: var(--ink);
+  stroke-width: 2.5;
+}
+
+.sv .sl {
+  stroke: #10263a;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.sv .sl.h {
+  stroke-width: 6.5;
+}
+
+.sv .sa {
+  fill: none;
+  stroke: var(--red);
+  stroke-width: 3.5;
+}
+
+.sv .dot {
+  fill: #10263a;
+}
+
+.sv .svt {
+  fill: #10263a;
+  font-family: var(--font-main);
+  font-weight: 800;
+  font-size: 14px;
+}
+
+:root[data-theme="dark"] .sv .sf2 {
+  fill: #ffffff;
+  stroke: #10263a;
+}
+

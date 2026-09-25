@@ -25,9 +25,10 @@ call npx cap sync android
 call node scripts/prepare-android.js
 
 echo.
-echo [3/3] Compiling Android APK...
-if exist "android\gradlew.bat" (
-    echo Running Gradle assembleDebug...
+echo [3/3] Checking Gradle and Java environment...
+where java >nul 2>nul
+if %ERRORLEVEL% EQU 0 (
+    echo Java found! Compiling Android APK with Gradle...
     cd android
     call gradlew.bat assembleDebug
     cd ..
@@ -38,12 +39,25 @@ if exist "android\gradlew.bat" (
         echo android\app\build\outputs\apk\debug\app-debug.apk
         echo =======================================================
     ) else (
-        echo [INFO] Gradle build finished. Check android\app\build\outputs\apk\
+        echo [INFO] Check android\app\build\outputs\apk\ for outputs.
     )
 ) else (
-    echo [NOTE] Opening Android project in Android Studio or use GitHub Actions...
-    call npx cap open android
+    echo -------------------------------------------------------
+    echo [NOTE] Local Java / Android SDK is not installed on this PC.
+    echo.
+    echo Don't worry! You have TWO easy options:
+    echo 1. Recommended: Double-click 'trigger-cloud-apk.bat'
+    echo    This builds the APK in GitHub Actions cloud for free
+    echo    and gives you the APK download link in 2 minutes!
+    echo.
+    echo 2. Open in Android Studio:
+    echo    Run 'npx cap open android' to open and compile.
+    echo -------------------------------------------------------
+    choice /M "Would you like to trigger cloud APK build now"
+    if errorlevel 2 goto end
+    if errorlevel 1 call trigger-cloud-apk.bat
 )
 
+:end
 echo.
 pause

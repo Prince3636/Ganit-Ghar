@@ -15,7 +15,8 @@ import {
 } from './audio/sfx.js';
 
 import {
-  startBgm, setBgmEnabled, setBgmVolume, isBgmEnabled, toggleBgm
+  startBgm, setBgmEnabled, setBgmVolume, isBgmEnabled, toggleBgm,
+  pauseBgmForBackground, resumeAudioFromBackground
 } from './audio/bgm.js';
 
 import { storage, getStreak, touchStreak, todayDateString } from './storage.js';
@@ -652,6 +653,26 @@ const unlockAudioOnTouch = async () => {
 window.addEventListener('click', unlockAudioOnTouch);
 window.addEventListener('pointerdown', unlockAudioOnTouch);
 window.addEventListener('keydown', unlockAudioOnTouch);
+window.addEventListener('touchstart', unlockAudioOnTouch, { passive: true });
+
+// Mobile Home Button / Tab Minimize / App Switch Audio Lifecycle
+document.addEventListener('visibilitychange', async () => {
+  if (document.hidden) {
+    pauseBgmForBackground();
+  } else {
+    await resumeAudioFromBackground();
+  }
+});
+window.addEventListener('focus', async () => {
+  if (!document.hidden) {
+    await resumeAudioFromBackground();
+  }
+});
+window.addEventListener('pageshow', async () => {
+  if (!document.hidden) {
+    await resumeAudioFromBackground();
+  }
+});
 
 // Apply stored settings
 const savedTheme = storage.get('theme', 'light');

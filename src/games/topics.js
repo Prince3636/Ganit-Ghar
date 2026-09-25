@@ -97,9 +97,10 @@ export function pie(n, k) {
     const a1 = -Math.PI / 2 + (i + 1) * 2 * Math.PI / n;
     const x0 = cx + r * Math.cos(a0), y0 = cy + r * Math.sin(a0);
     const x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
-    s += `<path d="M${cx},${cy} L${x0.toFixed(1)},${y0.toFixed(1)} A${r},${r} 0 0 1 ${x1.toFixed(1)},${y1.toFixed(1)} Z" class="${i < k ? 'pf' : 'pe'}"/>`;
+    const fill = i < k ? '#ffd23f' : '#ffffff';
+    s += `<path d="M${cx},${cy} L${x0.toFixed(1)},${y0.toFixed(1)} A${r},${r} 0 0 1 ${x1.toFixed(1)},${y1.toFixed(1)} Z" fill="${fill}" stroke="#10263a" stroke-width="2.5" class="${i < k ? 'pf' : 'pe'}"/>`;
   }
-  return svgw(s, 140, 140, 150);
+  return svgw(s, 140, 140, 160);
 }
 
 export function polySVG(n) {
@@ -109,54 +110,89 @@ export function polySVG(n) {
     const a = -Math.PI / 2 + off + i * 2 * Math.PI / n;
     pts.push(`${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`);
   }
-  return svgw(`<polygon points="${pts.join(' ')}" class="sf"/>`, 140, 140, 150);
+  return svgw(`<polygon points="${pts.join(' ')}" fill="#ffd23f" stroke="#10263a" stroke-width="3.5" stroke-linejoin="round" class="sf"/>`, 140, 140, 160);
 }
 
 export function circleSVG(label) {
-  return svgw(`<circle cx="70" cy="70" r="55" class="sf"/>${label ? `<line x1="70" y1="70" x2="125" y2="70" class="sl"/><circle cx="70" cy="70" r="3" class="dot"/><text x="97" y="62" text-anchor="middle" class="svt">${label}</text>` : ''}`, 140, 140, 150);
+  return svgw(`
+    <circle cx="70" cy="70" r="55" fill="#ffd23f" stroke="#10263a" stroke-width="3.5" class="sf"/>
+    ${label ? `
+      <line x1="70" y1="70" x2="125" y2="70" stroke="#10263a" stroke-width="3.5" stroke-linecap="round" class="sl"/>
+      <circle cx="70" cy="70" r="4" fill="#10263a" class="dot"/>
+      <text x="97" y="60" text-anchor="middle" fill="#10263a" font-family="'Lexend', sans-serif" font-weight="800" font-size="14" class="svt">${label}</text>
+    ` : ''}
+  `, 140, 140, 160);
 }
 
 export function rectSVG(w, h, wl, hl) {
   const s = Math.min(150 / w, 90 / h), rw = w * s, rh = h * s, x0 = (200 - rw) / 2, y0 = (140 - rh) / 2;
-  return svgw(`<rect x="${x0}" y="${y0}" width="${rw}" height="${rh}" class="sf"/>
-   <text x="100" y="${y0 - 8}" text-anchor="middle" class="svt">${wl}</text>
-   <text x="${x0 + rw + 8}" y="${y0 + rh / 2 + 5}" class="svt">${hl}</text>`);
+  return svgw(`
+    <rect x="${x0}" y="${y0}" width="${rw}" height="${rh}" rx="6" fill="#ffd23f" stroke="#10263a" stroke-width="3.5" class="sf"/>
+    <text x="100" y="${y0 - 8}" text-anchor="middle" fill="#10263a" font-family="'Lexend', sans-serif" font-weight="800" font-size="14" class="svt">${wl}</text>
+    <text x="${x0 + rw + 8}" y="${y0 + rh / 2 + 5}" fill="#10263a" font-family="'Lexend', sans-serif" font-weight="800" font-size="14" class="svt">${hl}</text>
+  `);
 }
 
 export function angleSVG(deg) {
   const vx = 68, vy = 68, L = 60, rad = deg * Math.PI / 180;
   const ex = vx + L * Math.cos(rad), ey = vy - L * Math.sin(rad);
-  const ar = 22, ax = vx + ar * Math.cos(rad), ay = vy - ar * Math.sin(rad);
-  return svgw(`<line x1="${vx}" y1="${vy}" x2="${vx + L}" y2="${vy}" class="sl"/>
-   <line x1="${vx}" y1="${vy}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" class="sl"/>
-   <path d="M${vx + ar},${vy} A${ar},${ar} 0 ${deg > 180 ? 1 : 0} 0 ${ax.toFixed(1)},${ay.toFixed(1)}" class="sa"/>
-   <circle cx="${vx}" cy="${vy}" r="3.5" class="dot"/>`, 136, 136, 160);
+  const ar = 24, ax = vx + ar * Math.cos(rad), ay = vy - ar * Math.sin(rad);
+  return svgw(`
+    <line x1="${vx}" y1="${vy}" x2="${vx + L}" y2="${vy}" stroke="#10263a" stroke-width="4" stroke-linecap="round" class="sl"/>
+    <line x1="${vx}" y1="${vy}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" stroke="#10263a" stroke-width="4" stroke-linecap="round" class="sl"/>
+    <path d="M${vx + ar},${vy} A${ar},${ar} 0 ${deg > 180 ? 1 : 0} 0 ${ax.toFixed(1)},${ay.toFixed(1)}" fill="none" stroke="#ff6b62" stroke-width="3.5" class="sa"/>
+    <circle cx="${vx}" cy="${vy}" r="4.5" fill="#10263a" class="dot"/>
+  `, 136, 136, 170);
 }
 
 export function rtSVG(la, lb, lc) {
-  return svgw(`<polygon points="62,115 182,115 62,25" class="sf"/>
-   <path d="M62,101 L76,101 L76,115" class="sa"/>
-   <text x="122" y="132" text-anchor="middle" class="svt">${la}</text>
-   <text x="54" y="74" text-anchor="end" class="svt">${lb}</text>
-   <text x="132" y="62" class="svt">${lc}</text>`, 200, 140, 200);
+  return svgw(`
+    <polygon points="62,115 182,115 62,25" fill="#fff1bd" stroke="#10263a" stroke-width="3.5" stroke-linejoin="round" class="sf"/>
+    <path d="M62,101 L76,101 L76,115" fill="none" stroke="#ff6b62" stroke-width="3" class="sa"/>
+    <text x="122" y="132" text-anchor="middle" fill="#10263a" font-family="'Lexend', sans-serif" font-weight="800" font-size="14" class="svt">${la}</text>
+    <text x="54" y="74" text-anchor="end" fill="#10263a" font-family="'Lexend', sans-serif" font-weight="800" font-size="14" class="svt">${lb}</text>
+    <text x="132" y="62" fill="#10263a" font-family="'Lexend', sans-serif" font-weight="800" font-size="14" class="svt">${lc}</text>
+  `, 200, 140, 200);
 }
 
 export function triSVG(a, b, c) {
-  return svgw(`<polygon points="25,118 175,118 95,22" class="sf"/>
-   <text x="42" y="110" class="svt">${a}</text><text x="128" y="110" class="svt">${b}</text><text x="80" y="55" class="svt">${c}</text>`);
+  return svgw(`
+    <polygon points="25,118 175,118 95,22" fill="#fff1bd" stroke="#10263a" stroke-width="3.5" stroke-linejoin="round" class="sf"/>
+    <text x="42" y="110" fill="#10263a" font-family="'Lexend', sans-serif" font-weight="800" font-size="14" class="svt">${a}</text>
+    <text x="128" y="110" fill="#10263a" font-family="'Lexend', sans-serif" font-weight="800" font-size="14" class="svt">${b}</text>
+    <text x="80" y="55" fill="#10263a" font-family="'Lexend', sans-serif" font-weight="800" font-size="14" class="svt">${c}</text>
+  `);
 }
 
 export function clockSVG(h, m) {
   const cx = 70, cy = 70;
-  let s = '<circle cx="70" cy="70" r="64" class="sf2"/>';
+  // Outer rim & crisp white face (guaranteed high contrast in both light and dark mode)
+  let s = `
+    <circle cx="70" cy="70" r="66" fill="#10263a" stroke="#ffffff" stroke-width="1.5" class="sf"/>
+    <circle cx="70" cy="70" r="61" fill="#ffffff" stroke="#10263a" stroke-width="3.5" class="sf2"/>
+    <circle cx="70" cy="70" r="54" fill="none" stroke="#dcebf5" stroke-width="1" stroke-dasharray="1 5.5"/>
+  `;
+
+  // Hour numerals & ticks
   for (let i = 1; i <= 12; i++) {
     const a = i * Math.PI / 6 - Math.PI / 2;
-    s += `<text x="${(cx + 50 * Math.cos(a)).toFixed(1)}" y="${(cy + 50 * Math.sin(a) + 5).toFixed(1)}" text-anchor="middle" class="svt">${i}</text>`;
+    const x1 = cx + 55 * Math.cos(a), y1 = cy + 55 * Math.sin(a);
+    const x2 = cx + (i % 3 === 0 ? 48 : 51) * Math.cos(a), y2 = cy + (i % 3 === 0 ? 48 : 51) * Math.sin(a);
+    s += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#10263a" stroke-width="${i % 3 === 0 ? 3 : 1.5}" stroke-linecap="round"/>`;
+    s += `<text x="${(cx + 40 * Math.cos(a)).toFixed(1)}" y="${(cy + 40 * Math.sin(a) + 5).toFixed(1)}" text-anchor="middle" fill="#10263a" font-family="'Lexend', sans-serif" font-weight="800" font-size="13" class="svt">${i}</text>`;
   }
-  const ma = m * Math.PI / 30 - Math.PI / 2, ha = ((h % 12) + m / 60) * Math.PI / 6 - Math.PI / 2;
-  s += `<line x1="70" y1="70" x2="${(cx + 30 * Math.cos(ha)).toFixed(1)}" y2="${(cy + 30 * Math.sin(ha)).toFixed(1)}" class="sl h"/>`;
-  s += `<line x1="70" y1="70" x2="${(cx + 44 * Math.cos(ma)).toFixed(1)}" y2="${(cy + 44 * Math.sin(ma)).toFixed(1)}" class="sl"/><circle cx="70" cy="70" r="4" class="dot"/>`;
-  return svgw(s, 140, 140, 170);
+
+  const ma = m * Math.PI / 30 - Math.PI / 2;
+  const ha = ((h % 12) + m / 60) * Math.PI / 6 - Math.PI / 2;
+
+  // Hour hand (bold, thick, dark navy)
+  s += `<line x1="70" y1="70" x2="${(cx + 26 * Math.cos(ha)).toFixed(1)}" y2="${(cy + 26 * Math.sin(ha)).toFixed(1)}" stroke="#10263a" stroke-width="6.5" stroke-linecap="round" class="sl h"/>`;
+  // Minute hand (sleek, vivid red for instant clarity)
+  s += `<line x1="70" y1="70" x2="${(cx + 42 * Math.cos(ma)).toFixed(1)}" y2="${(cy + 42 * Math.sin(ma)).toFixed(1)}" stroke="#ff6b62" stroke-width="3.5" stroke-linecap="round" class="sl"/>`;
+  // Center dual-color pin
+  s += `<circle cx="70" cy="70" r="5" fill="#10263a" class="dot"/><circle cx="70" cy="70" r="2.2" fill="#ffd23f"/>`;
+
+  return svgw(s, 140, 140, 180);
 }
 
 /* ================= 1. Jod-Ghata ================= */
